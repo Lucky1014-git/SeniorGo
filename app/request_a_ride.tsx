@@ -1,11 +1,13 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Location from 'expo-location';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import type { LatLng, Region } from 'react-native-maps';
 import MapView, { Marker } from 'react-native-maps';
 
 export default function RequestARide() {
+  const router = useRouter();
   const [currentLocation, setCurrentLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
   const [region, setRegion] = useState<Region | null>(null);
@@ -191,6 +193,9 @@ export default function RequestARide() {
           {marker && <Marker coordinate={marker} />}
         </MapView>
       )}
+      <TouchableOpacity style={styles.homeButton} onPress={() => router.replace('/')}> 
+        <Text style={styles.homeButtonText}>Back to Home</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -279,5 +284,18 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomColor: '#eee',
     borderBottomWidth: 1,
+  },
+  homeButton: {
+    marginTop: 20,
+    backgroundColor: '#2F5233',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  homeButtonText: {
+    color: '#FFFDF6',
+    fontWeight: '600',
+    fontSize: 18,
   },
 });
