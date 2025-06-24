@@ -3,12 +3,13 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>SeniorGo</Text>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.loginButton}>
+        <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/log_in')}>
           <Text style={styles.loginText}>Log in</Text>
         </TouchableOpacity>
 
@@ -16,6 +17,7 @@ export default function HomeScreen() {
           <Text style={styles.signupText}>Sign up</Text>
         </TouchableOpacity>
       </View>
+
       <TouchableOpacity style={styles.rideButton} onPress={() => router.push('/request_a_ride')}>
         <Text style={styles.rideButtonText}>Request a Ride</Text>
       </TouchableOpacity>
@@ -26,14 +28,14 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#DFF5E3', // Mint Green test
+    backgroundColor: '#DFF5E3',
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
     fontSize: 36,
     fontWeight: '600',
-    color: '#2F5233', // Forest Green
+    color: '#2F5233',
     marginBottom: 80,
   },
   buttonContainer: {
@@ -46,7 +48,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 10,
-    backgroundColor: '#DFF5E3', // Match background for hollow effect
+    backgroundColor: '#DFF5E3',
   },
   signupButton: {
     backgroundColor: '#2F5233',
@@ -78,4 +80,3 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 });
-
