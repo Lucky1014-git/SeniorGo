@@ -6,6 +6,11 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Go Back Arrow */}
+      <TouchableOpacity style={styles.goBackArrow} onPress={() => router.replace('/')}>
+        <Text style={styles.goBackText}>←</Text>
+      </TouchableOpacity>
+
       <Text style={styles.title}>Log In</Text>
 
       <TextInput
@@ -63,5 +68,16 @@ const styles = StyleSheet.create({
     color: '#FFFDF6',
     fontSize: 16,
     fontWeight: '600',
+  },
+  goBackArrow: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    padding: 8,
+    zIndex: 1,
+  },
+  goBackText: {
+    fontSize: 28,
+    color: '#2F5233',
   },
 });

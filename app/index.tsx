@@ -18,9 +18,6 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.rideButton} onPress={() => router.push('/request_a_ride')}>
-        <Text style={styles.rideButtonText}>Request a Ride</Text>
-      </TouchableOpacity>
     </View>
   );
 }

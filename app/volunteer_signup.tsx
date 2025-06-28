@@ -1,15 +1,15 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 export default function VolunteerSignUp() {
@@ -30,6 +30,8 @@ export default function VolunteerSignUp() {
     firstAid: '',
     mobilityHelp: '',
   });
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (key: string, value: any) => setForm({ ...form, [key]: value });
@@ -74,13 +76,22 @@ export default function VolunteerSignUp() {
       Alert.alert('License Number Required', 'Please enter your driver’s license number.');
       return;
     }
+    // Password validation
+    if (!password || !confirmPassword) {
+      Alert.alert('Password Required', 'Please enter and confirm your password.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Password Mismatch', 'Passwords do not match.');
+      return;
+    }
     setSubmitting(true);
     try {
       console.log('Submitting form:', JSON.stringify(form));
       const response = await fetch('http://10.0.0.24:5000/signUpVolunteer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, password }),
       });
       const data = await response.json();
       if (response.ok) {
@@ -124,6 +135,24 @@ export default function VolunteerSignUp() {
         <TextInput style={styles.input} placeholder="Email Address" value={form.email} onChangeText={t => handleChange('email', t)} keyboardType="email-address" autoCapitalize="none" />
         <TextInput style={styles.input} placeholder="Phone Number" value={form.phone} onChangeText={t => handleChange('phone', t)} keyboardType="phone-pad" />
         <TextInput style={styles.input} placeholder="Address or City/Zip" value={form.address} onChangeText={t => handleChange('address', t)} />
+
+        {/* Password fields */}
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoCapitalize="none"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          autoCapitalize="none"
+        />
 
         {/* Driving & Vehicle */}
         <Text style={styles.section}>Driver & Vehicle Info</Text>
