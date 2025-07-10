@@ -35,7 +35,7 @@ export default function SeniorSignUp() {
     setSubmitting(true);
     console.log('Submitting form:', JSON.stringify(form));
     try {
-      const response = await fetch('http://10.0.0.24:5000/signUpSenior', {
+      const response = await fetch('http://10.0.0.23:5000/signUpSenior', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),

@@ -1,8 +1,44 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useUser } from '../contexts/usercontext';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const { setUserInfo } = useUser(); // Move useUser() inside the component
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Missing Fields', 'Please enter both email and password.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const response = await fetch('http://10.0.0.23:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (response.ok && data.message === 'success') {
+        Alert.alert('Success', 'Logged in successfully!');
+        setUserInfo(data.userInfo); // Set user info in context
+        if (data.accountType === 'senior') {
+          router.push('/senior-dashboard'); // Removed params
+        } else {
+          router.push('/request_a_ride');
+        }
+      } else {
+        Alert.alert('Login Failed', data.message || 'Invalid credentials.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Could not connect to server.');
+    }
+    setSubmitting(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -18,6 +54,8 @@ export default function LoginScreen() {
         placeholder="Email Address"
         keyboardType="email-address"
         autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
       />
 
       <TextInput
@@ -25,10 +63,12 @@ export default function LoginScreen() {
         placeholder="Password"
         secureTextEntry
         autoCapitalize="none"
+        value={password}
+        onChangeText={setPassword}
       />
 
-      <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/request_a_ride')}>
-        <Text style={styles.loginText}>Submit</Text>
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={submitting}>
+        <Text style={styles.loginText}>{submitting ? 'Submitting...' : 'Submit'}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -81,3 +121,4 @@ const styles = StyleSheet.create({
     color: '#2F5233',
   },
 });
+    

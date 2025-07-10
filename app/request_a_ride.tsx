@@ -2,18 +2,36 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import type { LatLng, Region } from 'react-native-maps';
 import MapView, { Marker } from 'react-native-maps';
+import { useUser } from '../contexts/usercontext'; // import useUser
+
+
+// Helper to format date in 12-hour AM/PM format
+function format12Hour(date: Date) {
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // 0 should be 12
+  const minStr = minutes < 10 ? '0' + minutes : minutes;
+  return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()} ${hours}:${minStr} ${ampm}`;
+}
 
 export default function RequestARide() {
   const router = useRouter();
+  const { getUserInfo } = useUser(); // get getUserInfo from context
+  const userInfo = getUserInfo();
+  const userEmailAddress = userInfo?.emailaddress || '';
+
   const [currentLocation, setCurrentLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
   const [region, setRegion] = useState<Region | null>(null);
   const [marker, setMarker] = useState<LatLng | null>(null);
-  const [pickupType, setPickupType] = useState<'now' | 'later'>('now');
-  const [showPicker, setShowPicker] = useState(false);
+  const [pickupType, setPickupType] = useState<'now' | 'later' | 'at'>('now');
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [pickupTime, setPickupTime] = useState(new Date());
   // Store full suggestion objects for uniqueness
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
@@ -61,7 +79,7 @@ export default function RequestARide() {
   // Function to fetch address suggestions using Nominatim API (restricted to US)
   const fetchAddressSuggestions = async (query: string) => {
     if (!query || query.length < 3) {
-      setAddressSuggestions([]);
+      setDropoffSuggestions([]);
       return;
     }
     try {
@@ -90,8 +108,22 @@ export default function RequestARide() {
     }
   };
 
+  // Example error handler that navigates to dashboard
+  const handleError = (message: string) => {
+    Alert.alert('Error', message, [
+      {
+        text: 'Go to Dashboard',
+        onPress: () => router.replace('/senior-dashboard'),
+      },
+    ]);
+  };
+
   return (
     <View style={styles.container}>
+      {/* Back Arrow to Dashboard */}
+      <TouchableOpacity style={styles.backArrow} onPress={() => router.replace('/senior-dashboard')}>
+        <Text style={styles.backArrowText}>←</Text>
+      </TouchableOpacity>
       <Text style={styles.title}>Request a Ride</Text>
       <TextInput
         style={styles.input}
@@ -150,39 +182,57 @@ export default function RequestARide() {
           style={styles.suggestionList}
         />
       )}
-      <View style={styles.pickupOptions}>
-        <TouchableOpacity
-          style={[styles.pickupButton, pickupType === 'now' && styles.pickupButtonSelected]}
-          onPress={() => setPickupType('now')}
-        >
-          <Text style={[styles.pickupButtonText, pickupType === 'now' && styles.pickupButtonTextSelected]}>Pick Up Now</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.pickupButton, pickupType === 'later' && styles.pickupButtonSelected]}
-          onPress={() => setPickupType('later')}
-        >
-          <Text style={[styles.pickupButtonText, pickupType === 'later' && styles.pickupButtonTextSelected]}>Pick Up Later</Text>
-        </TouchableOpacity>
-      </View>
-      {pickupType === 'later' && (
-        <>
-          <TouchableOpacity style={styles.timePickerButton} onPress={() => setShowPicker(true)}>
-            <Text style={styles.timePickerButtonText}>
-              {pickupTime ? pickupTime.toLocaleString() : 'Select Date & Time'}
-            </Text>
-          </TouchableOpacity>
-          {showPicker && (
-            <DateTimePicker
-              value={pickupTime}
-              mode="datetime"
-              display="default"
-              onChange={(event, date) => {
-                setShowPicker(false);
-                if (date) setPickupTime(date);
-              }}
-            />
-          )}
-        </>
+      {/* Pick Up Date button */}
+      <TouchableOpacity
+        style={styles.timePickerButton}
+        onPress={() => setShowDatePicker(true)}
+      >
+        <Text style={styles.timePickerButtonText}>
+          Select Pick Up Date{pickupTime && !showDatePicker ? ` (${pickupTime.getMonth() + 1}/${pickupTime.getDate()}/${pickupTime.getFullYear()})` : ''}
+        </Text>
+      </TouchableOpacity>
+      {showDatePicker && (
+        <DateTimePicker
+          value={pickupTime}
+          mode="date"
+          display="default"
+          onChange={(event, date) => {
+            setShowDatePicker(false);
+            if (date) {
+              // Keep the time, update only the date
+              const newDate = new Date(date);
+              newDate.setHours(pickupTime.getHours());
+              newDate.setMinutes(pickupTime.getMinutes());
+              setPickupTime(newDate);
+            }
+          }}
+        />
+      )}
+      {/* Pick Up Time button */}
+      <TouchableOpacity
+        style={styles.timePickerButton}
+        onPress={() => setShowTimePicker(true)}
+      >
+        <Text style={styles.timePickerButtonText}>
+          Select Pick Up Time{pickupTime && !showTimePicker ? ` (${format12Hour(pickupTime).split(' ')[1]} ${format12Hour(pickupTime).split(' ')[2]})` : ''}
+        </Text>
+      </TouchableOpacity>
+      {showTimePicker && (
+        <DateTimePicker
+          value={pickupTime}
+          mode="time"
+          display="default"
+          onChange={(event, date) => {
+            setShowTimePicker(false);
+            if (date) {
+              // Keep the date, update only the time
+              const newDate = new Date(pickupTime);
+              newDate.setHours(date.getHours());
+              newDate.setMinutes(date.getMinutes());
+              setPickupTime(newDate);
+            }
+          }}
+        />
       )}
       {region && (
         <MapView
@@ -193,8 +243,47 @@ export default function RequestARide() {
           {marker && <Marker coordinate={marker} />}
         </MapView>
       )}
-      <TouchableOpacity style={styles.homeButton} onPress={() => router.replace('/')}> 
-        <Text style={styles.homeButtonText}>Back to Home</Text>
+      {/* Example usage: call handleError('Something went wrong!') where appropriate */}
+      {/* Remove Back to Home button */}
+
+      {/* Submit Button */}
+      <TouchableOpacity
+        style={styles.submitButton}
+        onPress={async () => {
+          if (!currentLocation || !dropoffLocation) {
+            handleError('Please enter both pickup and dropoff locations.');
+            return;
+          }
+          try {
+            // Only call the requestRide API, which now handles notifications/emails server-side
+            await fetch('http://10.0.0.23:5000/requestRide', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                currentLocation,
+                dropoffLocation,
+                pickupDateTime: pickupTime.toISOString(),
+                userEmailAddress
+              }),
+            });
+
+            // Show success message, then navigate to dashboard
+            Alert.alert(
+              'Success',
+              'Your ride will be here soon.',
+              [
+                {
+                  text: 'OK',
+                  onPress: () => router.replace('/senior-dashboard'),
+                },
+              ]
+            );
+          } catch (e) {
+            handleError('There was a problem requesting your ride. Please try again.');
+          }
+        }}
+      >
+        <Text style={styles.submitButtonText}>Submit</Text>
       </TouchableOpacity>
     </View>
   );
@@ -260,15 +349,15 @@ const styles = StyleSheet.create({
     borderColor: '#2F5233',
     borderWidth: 1,
     borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
+    paddingVertical: 7, // reduced from 10
+    paddingHorizontal: 14, // reduced from 18
     alignItems: 'center',
     marginBottom: 10,
   },
   timePickerButtonText: {
     color: '#2F5233',
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: 15, // reduced from 16
   },
   suggestionList: {
     width: '90%',
@@ -285,17 +374,32 @@ const styles = StyleSheet.create({
     borderBottomColor: '#eee',
     borderBottomWidth: 1,
   },
-  homeButton: {
-    marginTop: 20,
-    backgroundColor: '#2F5233',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    alignItems: 'center',
+  backArrow: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    padding: 8,
+    zIndex: 10,
   },
-  homeButtonText: {
+  backArrowText: {
+    fontSize: 32,
+    color: '#2F5233',
+  },
+  submitButton: {
+    backgroundColor: '#2F5233',
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    alignItems: 'center',
+    marginTop: 18,
+    marginBottom: 24,
+  },
+  submitButtonText: {
     color: '#FFFDF6',
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 18,
   },
 });
+
+
+

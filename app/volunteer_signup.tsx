@@ -88,7 +88,7 @@ export default function VolunteerSignUp() {
     setSubmitting(true);
     try {
       console.log('Submitting form:', JSON.stringify(form));
-      const response = await fetch('http://10.0.0.24:5000/signUpVolunteer', {
+      const response = await fetch('http://10.0.0.23:5000/signUpVolunteer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, password }),
@@ -100,7 +100,7 @@ export default function VolunteerSignUp() {
       } else {
         Alert.alert('Error', data.message || 'Failed to create account.');
       }
-    } catch (error) {
+    } catch (error) { 
       console.error('API error:', error);
       Alert.alert('Error', 'Could not connect to server.');
     }
