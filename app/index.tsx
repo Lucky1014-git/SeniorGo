@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 20,
+    marginHorizontal: 10, // Optional: add spacing manually if needed
   },
   loginButton: {
     borderColor: '#2F5233',

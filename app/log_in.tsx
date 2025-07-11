@@ -27,9 +27,11 @@ export default function LoginScreen() {
         Alert.alert('Success', 'Logged in successfully!');
         setUserInfo(data.userInfo); // Set user info in context
         if (data.accountType === 'senior') {
-          router.push('/senior-dashboard'); // Removed params
+          router.push('/senior-dashboard');
+        } else if (data.accountType === 'volunteer') {
+          router.push('/volunteer-dashboard');
         } else {
-          router.push('/request_a_ride');
+          // fallback or handle other account types if needed
         }
       } else {
         Alert.alert('Login Failed', data.message || 'Invalid credentials.');
@@ -121,4 +123,4 @@ const styles = StyleSheet.create({
     color: '#2F5233',
   },
 });
-    
+
