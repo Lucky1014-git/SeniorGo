@@ -1,3 +1,4 @@
+import { MaterialIcons } from '@expo/vector-icons'; // Add this import
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -120,9 +121,19 @@ export default function VolunteerSignUp() {
     </View>
   );
 
+  // Signout handler
+  const handleSignOut = () => {
+    router.replace('/log_in');
+  };
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        {/* Signout Icon Button */}
+        <TouchableOpacity style={styles.signoutButton} onPress={handleSignOut}>
+          <MaterialIcons name="logout" size={22} color="#2F5233" />
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.backArrow} onPress={() => router.back()}>
           <Text style={styles.backArrowText}>{'←'}</Text>
         </TouchableOpacity>
@@ -262,6 +273,23 @@ const styles = StyleSheet.create({
   },
   backArrowText: {
     fontSize: 32,
+    color: '#2F5233',
+  },
+  signoutButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 10,
+    padding: 6,
+    backgroundColor: '#FFFDF6',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#2F5233',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signoutIcon: {
+    fontSize: 22,
     color: '#2F5233',
   },
 });

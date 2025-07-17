@@ -25,6 +25,7 @@ export default function LoginScreen() {
       const data = await response.json();
       if (response.ok && data.message === 'success') {
         Alert.alert('Success', 'Logged in successfully!');
+        console.log('User info:', data.userInfo);
         setUserInfo(data.userInfo); // Set user info in context
         if (data.accountType === 'senior') {
           router.push('/senior-dashboard');

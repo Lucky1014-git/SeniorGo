@@ -1,3 +1,4 @@
+import { MaterialIcons } from '@expo/vector-icons'; // Add this import
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
@@ -108,6 +109,11 @@ export default function RequestARide() {
     }
   };
 
+  // Signout handler
+  const handleSignOut = () => {
+    router.replace('/log_in');
+  };
+
   // Example error handler that navigates to dashboard
   const handleError = (message: string) => {
     Alert.alert('Error', message, [
@@ -120,6 +126,10 @@ export default function RequestARide() {
 
   return (
     <View style={styles.container}>
+      {/* Signout Icon Button */}
+      <TouchableOpacity style={styles.signoutButton} onPress={handleSignOut}>
+        <MaterialIcons name="logout" size={22} color="#2F5233" />
+      </TouchableOpacity>
       {/* Back Arrow to Dashboard */}
       <TouchableOpacity style={styles.backArrow} onPress={() => router.replace('/senior-dashboard')}>
         <Text style={styles.backArrowText}>←</Text>
@@ -214,7 +224,16 @@ export default function RequestARide() {
         onPress={() => setShowTimePicker(true)}
       >
         <Text style={styles.timePickerButtonText}>
-          Select Pick Up Time{pickupTime && !showTimePicker ? ` (${format12Hour(pickupTime).split(' ')[1]} ${format12Hour(pickupTime).split(' ')[2]})` : ''}
+          {(() => {
+            if (pickupTime && !showTimePicker) {
+              const formatted = format12Hour(pickupTime).split(' ');
+              // Defensive: formatted should have at least 3 elements
+              const hour = formatted[1] || '';
+              const ampm = formatted[2] || '';
+              return `Select Pick Up Time (${hour} ${ampm})`;
+            }
+            return 'Select Pick Up Time';
+          })()}
         </Text>
       </TouchableOpacity>
       {showTimePicker && (
@@ -264,6 +283,15 @@ export default function RequestARide() {
                 dropoffLocation,
                 pickupDateTime: pickupTime.toISOString(),
                 userEmailAddress
+              }),
+            });
+
+            // Send emailaddress to acceptRequests API
+            await fetch('http://10.0.0.23:5000/acceptRequests', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                emailaddress: userEmailAddress
               }),
             });
 
@@ -398,6 +426,23 @@ const styles = StyleSheet.create({
     color: '#FFFDF6',
     fontWeight: '700',
     fontSize: 18,
+  },
+  signoutButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 10,
+    padding: 6,
+    backgroundColor: '#FFFDF6',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#2F5233',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signoutIcon: {
+    fontSize: 22,
+    color: '#2F5233',
   },
 });
 
