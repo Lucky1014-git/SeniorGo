@@ -123,7 +123,7 @@ export default function VolunteerSignUp() {
 
   // Signout handler
   const handleSignOut = () => {
-    router.replace('/log_in');
+    router.replace('/');
   };
 
   return (

@@ -49,8 +49,13 @@ export default function LoginScreen() {
       <TouchableOpacity style={styles.goBackArrow} onPress={() => router.replace('/')}>
         <Text style={styles.goBackText}>←</Text>
       </TouchableOpacity>
+      {/* Sign Up Button */}
+      <TouchableOpacity style={styles.signupButton} onPress={() => router.replace('/sign_up')}>
+        <Text style={styles.signupText}>Sign Up</Text>
+      </TouchableOpacity>
 
-      <Text style={styles.title}>Log In</Text>
+      <Text style={styles.title}>SeniorGo</Text>
+      <Text style={styles.subtitle}>Welcome! Please log in</Text>
 
       <TextInput
         style={styles.input}
@@ -86,10 +91,15 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 40,
+    fontSize: 36,
+    fontWeight: '600',
     color: '#2F5233',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#2F5233',
+    marginBottom: 30,
   },
   input: {
     width: '100%',
@@ -122,6 +132,22 @@ const styles = StyleSheet.create({
   goBackText: {
     fontSize: 28,
     color: '#2F5233',
+  },
+  signupButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    padding: 8,
+    zIndex: 1,
+    backgroundColor: '#FFFDF6',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2F5233',
+  },
+  signupText: {
+    color: '#2F5233',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
 

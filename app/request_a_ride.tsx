@@ -111,7 +111,7 @@ export default function RequestARide() {
 
   // Signout handler
   const handleSignOut = () => {
-    router.replace('/log_in');
+    router.replace('/');
   };
 
   // Example error handler that navigates to dashboard

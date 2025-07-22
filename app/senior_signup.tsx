@@ -57,7 +57,7 @@ export default function SeniorSignUp() {
 
   // Signout handler
   const handleSignOut = () => {
-    router.replace('/log_in');
+    router.replace('/');
   };
 
   return (
