@@ -18,6 +18,7 @@ export default function CurrentRides() {
   const [currentStatus, setCurrentStatus] = useState<string | null>(null);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [rideStatusBar, setRideStatusBar] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -29,10 +30,28 @@ export default function CurrentRides() {
           body: JSON.stringify({ emailaddress }),
         });
         const data = await response.json();
-        console.log('Current rides data venkat:', data);
-        setRides(data.currentRides || []); // expects data.rides to be an array
-        //console.log('Current rides:', rides.length);
-        setCurrentStatus(data.status); // e.g., "Accepted"
+        setRides(data.currentRides || []);
+        setCurrentStatus(data.status);
+        // For each ride, call updateStatusBar and update ride status if needed
+        if (data.currentRides && Array.isArray(data.currentRides)) {
+          const updatedStatuses: { [key: string]: string } = {};
+          await Promise.all(
+            data.currentRides.map(async (ride: any) => {
+              try {
+                const statusRes = await fetch('http://10.0.0.23:5000/updateStatusBar', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ id: ride.id }),
+                });
+                const statusData = await statusRes.json();
+                if (statusData.status) {
+                  updatedStatuses[ride.id] = statusData.status;
+                }
+              } catch {}
+            })
+          );
+          setRideStatusBar(updatedStatuses);
+        }
       } catch (error) {
         setRides([]);
         setCurrentStatus(null);
@@ -47,6 +66,7 @@ export default function CurrentRides() {
       <TouchableOpacity style={styles.backArrow} onPress={() => router.replace('/senior-dashboard')}>
         <Text style={{ fontSize: 28, color: '#2F5233' }}>{'\u2190'}</Text>
       </TouchableOpacity>
+      <Text style={styles.header}>Current Rides</Text>
       <View style={styles.rideList}>
         {loading ? (
           <Text style={{ color: '#888', alignSelf: 'center', marginTop: 32 }}>Loading...</Text>
@@ -54,14 +74,15 @@ export default function CurrentRides() {
           <Text style={{ color: '#888', alignSelf: 'center', marginTop: 32 }}>No current rides found.</Text>
         ) : (
           rides.map((ride, idx) => {
+            const statusBar = rideStatusBar[ride.id] || ride.status;
             const statusIndex =
-              ride.status === 'Accepted'
+              statusBar === 'Accepted'
                 ? 0
-                : ride.status === 'VolunteerStarted'
+                : statusBar === 'VolunteerStarted'
                 ? 1
-                : ride.status === 'RideStarted'
+                : statusBar === 'RideStarted'
                 ? 2
-                : ride.status === 'RideEnded'
+                : statusBar === 'RideEnded'
                 ? 3
                 : -1;
 
@@ -84,23 +105,33 @@ export default function CurrentRides() {
               <View key={ride.id || idx} style={styles.rideCard}>
                 {/* Ride Progress Tracker */}
                 <View style={styles.trackerContainer}>
-                  {rideStatuses.map((status, sidx) => (
-                    <React.Fragment key={status.label}>
-                      <View style={[
-                        styles.trackerDivision,
-                        sidx <= statusIndex && styles.trackerDivisionActive,
-                        sidx === 0 && styles.trackerDivisionFirst,
-                        sidx === rideStatuses.length - 1 && styles.trackerDivisionLast
-                      ]}>
-                        <Text style={[
-                          styles.trackerLabel,
-                          sidx <= statusIndex && styles.trackerLabelActive
+                  {rideStatuses.map((status, sidx) => {
+                    const rideStatus = (rideStatusBar[ride.id] || ride.status || '').toLowerCase();
+                    const isVolunteerStarted = rideStatus === 'volunteerstarted';
+                    const isRideStarted = rideStatus === 'ridestarted';
+                    // Color second bar if volunteerstarted, third bar if ridestarted
+                    const isActive =
+                      sidx <= statusIndex ||
+                      (isVolunteerStarted && sidx === 1) ||
+                      (isRideStarted && sidx === 2);
+                    return (
+                      <React.Fragment key={status.label}>
+                        <View style={[
+                          styles.trackerDivision,
+                          isActive && styles.trackerDivisionActive,
+                          sidx === 0 && styles.trackerDivisionFirst,
+                          sidx === rideStatuses.length - 1 && styles.trackerDivisionLast
                         ]}>
-                          {status.label}
-                        </Text>
-                      </View>
-                    </React.Fragment>
-                  ))}
+                          <Text style={[
+                            styles.trackerLabel,
+                            isActive && styles.trackerLabelActive
+                          ]}>
+                            {status.label}
+                          </Text>
+                        </View>
+                      </React.Fragment>
+                    );
+                  })}
                 </View>
                 <Text style={styles.label}>Current Location:</Text>
                 <Text style={styles.value}>{ride.currentlocation}</Text>
@@ -263,6 +294,13 @@ const styles = StyleSheet.create({
   trackerLabelActive: {
     color: '#388E3C',
     fontWeight: 'bold',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2F5233',
+    textAlign: 'center',
+    marginBottom: 16,
   },
 });
 

@@ -14,20 +14,24 @@ export default function RideRequests() {
   console.log('Email address:', emailaddress); // Debugging line to check email address
   useEffect(() => {
     // Fetch active ride requests from backend API
-const fetchRequests = async () => {
-  try {
-    const response = await fetch('http://10.0.0.23:5000/activeRequests');
-    const data = await response.json();
-    console.log('Fetched ride requests:', data);
-    setRequests(data.activeRequests); // ✅ Fix: unwrap the list
-  } catch (error) {
-    console.error('Fetch error:', error);
-    Alert.alert('Error', 'Failed to load ride requests.');
-  }
-  setLoading(false);
-};
+    const fetchRequests = async () => {
+      try {
+        const response = await fetch('http://10.0.0.23:5000/activeRequests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emailaddress }),
+        });
+        const data = await response.json();
+        console.log('Fetched ride requests:', data);
+        setRequests(data.activeRequests); // ✅ Fix: unwrap the list
+      } catch (error) {
+        console.error('Fetch error:', error);
+        Alert.alert('Error', 'Failed to load ride requests.');
+      }
+      setLoading(false);
+    };
     fetchRequests();
-  }, []);
+  }, [emailaddress]);
 
   const approveRide = async (emailaddress: string, id: string) => {
     try {

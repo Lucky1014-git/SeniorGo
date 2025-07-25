@@ -9,6 +9,7 @@ export default function ApprovedRides() {
   const emailaddress = getUserInfo()?.emailaddress;
   const [approvedRides, setApprovedRides] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rideStatus, setRideStatus] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const fetchApprovedRides = async () => {
@@ -47,18 +48,101 @@ export default function ApprovedRides() {
     return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
   };
 
-  const renderRide = ({ item }: { item: any }) => (
-    <View style={styles.card}>
-      <Text style={styles.label}>Email:</Text>
-      <Text style={styles.value}>{item.userEmailAddress}</Text>
-      <Text style={styles.label}>Current Location:</Text>
-      <Text style={styles.value}>{item.currentlocation}</Text>
-      <Text style={styles.label}>Dropoff Location:</Text>
-      <Text style={styles.value}>{item.dropofflocation}</Text>
-      <Text style={styles.label}>Pickup Date/Time:</Text>
-      <Text style={styles.value}>{formatLocalDateTime(item.pickupDateTime)}</Text>
-    </View>
-  );
+  const handleVolunteerStarted = async (rideId: string) => {
+    try {
+      const response = await fetch('http://10.0.0.23:5000/updateStatus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: rideId }),
+      });
+      const data = await response.json();
+      if (response.ok && response.status === 200) {
+        // If API returns rideEnded, update status accordingly
+        const newStatus = (data.status && data.status.toLowerCase() === 'rideended') ? 'rideEnded' : 'volunteerStarted';
+        setRideStatus(prev => ({ ...prev, [rideId]: newStatus }));
+        Alert.alert('Success', newStatus === 'rideEnded' ? 'Ride ended status updated.' : 'Volunteer started status updated.');
+      } else {
+        Alert.alert('Error', data.message || 'Failed to update status.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Could not connect to server.');
+    }
+  };
+
+  const handleRideStarted = async (rideId: string) => {
+    try {
+      const response = await fetch('http://10.0.0.23:5000/updateStatus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: rideId }),
+      });
+      const data = await response.json();
+      if (response.ok && response.status === 200) {
+        const newStatus = (data.status && data.status.toLowerCase() === 'rideended') ? 'rideEnded' : 'rideEnded';
+        setRideStatus(prev => ({ ...prev, [rideId]: newStatus }));
+        Alert.alert('Success', 'Ride ended status updated.');
+      } else {
+        Alert.alert('Error', data.message || 'Failed to update status.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Could not connect to server.');
+    }
+  };
+
+  const handleRideEnded = async (rideId: string) => {
+    try {
+      const response = await fetch('http://10.0.0.23:5000/updateStatus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: rideId }),
+      });
+      const data = await response.json();
+      if (response.ok && response.status === 200) {
+        const newStatus = (data.status && data.status.toLowerCase() === 'rideended') ? 'rideEnded' : 'rideEnded';
+        setRideStatus(prev => ({ ...prev, [rideId]: newStatus }));
+        Alert.alert('Success', 'Ride ended status updated.');
+      } else {
+        Alert.alert('Error', data.message || 'Failed to update status.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Could not connect to server.');
+    }
+  };
+
+  const renderRide = ({ item }: { item: any }) => {
+    const status = rideStatus[item.id] || 'accepted';
+    let buttonText = '';
+    let buttonHandler = undefined;
+    if (status === 'accepted') {
+      buttonText = 'Volunteer Started';
+      buttonHandler = () => handleVolunteerStarted(item.id);
+    } else if (status === 'volunteerStarted') {
+      buttonText = 'Ride Started';
+      buttonHandler = () => handleRideStarted(item.id);
+    } else if (status === 'rideStarted' || status === 'rideEnded') {
+      buttonText = 'Ride Ended';
+      buttonHandler = undefined;
+    }
+    return (
+      <View style={styles.card}>
+        <Text style={styles.label}>Email:</Text>
+        <Text style={styles.value}>{item.userEmailAddress}</Text>
+        <Text style={styles.label}>Current Location:</Text>
+        <Text style={styles.value}>{item.currentlocation}</Text>
+        <Text style={styles.label}>Dropoff Location:</Text>
+        <Text style={styles.value}>{item.dropofflocation}</Text>
+        <Text style={styles.label}>Pickup Date/Time:</Text>
+        <Text style={styles.value}>{formatLocalDateTime(item.pickupDateTime)}</Text>
+        <TouchableOpacity
+          style={styles.volunteerButton}
+          onPress={buttonHandler}
+          disabled={status === 'rideStarted' || status === 'rideEnded'}
+        >
+          <Text style={styles.volunteerButtonText}>{buttonText}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -136,5 +220,19 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#888',
     fontStyle: 'italic',
+  },
+  volunteerButton: {
+    marginTop: 10,
+    backgroundColor: '#2F5233',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+  },
+  volunteerButtonText: {
+    color: '#FFFDF6',
+    fontSize: 15,
+    fontWeight: 'bold',
   },
 });

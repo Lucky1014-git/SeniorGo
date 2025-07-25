@@ -34,6 +34,7 @@ export default function VolunteerSignUp() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [groupCode, setGroupCode] = useState('');
 
   const handleChange = (key: string, value: any) => setForm({ ...form, [key]: value });
 
@@ -92,12 +93,16 @@ export default function VolunteerSignUp() {
       const response = await fetch('http://10.0.0.23:5000/signUpVolunteer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, password }),
+        body: JSON.stringify({ ...form, password, groupCode }),
       });
       const data = await response.json();
       if (response.ok) {
-        Alert.alert('Success', 'Account created successfully!');
-        router.replace('/');
+        if (data.message === 'invalid group code') {
+          Alert.alert('Invalid Group Code', 'The group code you entered is not valid.');
+        } else {
+          Alert.alert('Success', 'Account created successfully!');
+          router.replace('/');
+        }
       } else {
         Alert.alert('Error', data.message || 'Failed to create account.');
       }
@@ -185,6 +190,9 @@ export default function VolunteerSignUp() {
         <YesNo value={form.firstAid} onChange={v => handleChange('firstAid', v)} />
         <Text style={styles.question}>Comfortable helping with mobility?</Text>
         <YesNo value={form.mobilityHelp} onChange={v => handleChange('mobilityHelp', v)} />
+
+        {/* Group Code */}
+        <TextInput style={styles.input} placeholder="Group Code" value={groupCode} onChangeText={setGroupCode} />
 
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={submitting}>
           <Text style={styles.submitButtonText}>{submitting ? 'Submitting...' : 'Submit'}</Text>

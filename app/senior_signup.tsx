@@ -15,6 +15,7 @@ export default function SeniorSignUp() {
     agree: false,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [groupCode, setGroupCode] = useState('');
 
   const handleChange = (key: string, value: any) => setForm({ ...form, [key]: value });
 
@@ -33,18 +34,26 @@ export default function SeniorSignUp() {
       Alert.alert('Invalid Email', 'Please enter a valid email address.');
       return;
     }
+    if (!groupCode) {
+      Alert.alert('Group Code Required', 'Please enter your group code.');
+      return;
+    }
     setSubmitting(true);
     console.log('Submitting form:', JSON.stringify(form));
     try {
       const response = await fetch('http://10.0.0.23:5000/signUpSenior', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, groupCode }),
       });
       const data = await response.json();
       if (response.ok) {
-        Alert.alert('Success', 'Account created successfully!');
-        router.replace('/');
+        if (data.message === 'Invalid groupcode') {
+          Alert.alert('Invalid Group Code', 'The group code you entered is not valid.');
+        } else {
+          Alert.alert('Success', 'Account created successfully!');
+          router.replace('/');
+        }
       } else {
         Alert.alert('Error', data.message || 'Failed to create account.');
       }
@@ -76,6 +85,7 @@ export default function SeniorSignUp() {
       <TextInput style={styles.input} placeholder="Password" value={form.password} onChangeText={t => handleChange('password', t)} secureTextEntry />
       <TextInput style={styles.input} placeholder="Confirm Password" value={form.confirmPassword} onChangeText={t => handleChange('confirmPassword', t)} secureTextEntry />
       <TextInput style={styles.input} placeholder="Home Address or ZIP Code" value={form.address} onChangeText={t => handleChange('address', t)} />
+      <TextInput style={styles.input} placeholder="Group Code" value={groupCode} onChangeText={setGroupCode} />
       <View style={styles.checkboxContainer}>
         <TouchableOpacity onPress={() => handleChange('agree', !form.agree)} style={styles.customCheckbox}>
           <Text style={styles.checkboxIcon}>{form.agree ? '🔘' : '⭕'}</Text>

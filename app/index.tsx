@@ -82,6 +82,9 @@ export default function LoginScreen() {
       <TouchableOpacity onPress={() => router.replace('/forgot-password')}>
         <Text style={styles.forgotPasswordLink}>Forgot password?</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.replace('/admin-login')}>
+        <Text style={styles.adminLoginLink}>Admin login</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -153,6 +156,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 12,
     textDecorationLine: 'underline',
+  },
+  adminLoginLink: {
+    color: '#2F5233',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+    textDecorationLine: 'underline',
+    fontWeight: '600',
   },
 });
 
