@@ -2,6 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons'; // Add this import
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext'; // <-- add this import
 
 export default function RideRequests() {
@@ -16,7 +17,7 @@ export default function RideRequests() {
     // Fetch active ride requests from backend API
     const fetchRequests = async () => {
       try {
-        const response = await fetch('http://10.0.0.23:5000/activeRequests', {
+        const response = await fetch(API_ENDPOINTS.ACTIVE_REQUESTS, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ emailaddress }),
@@ -36,7 +37,7 @@ export default function RideRequests() {
   const approveRide = async (emailaddress: string, id: string) => {
     try {
       console.log('Approving ride:', { emailaddress, id });
-      const response = await fetch('http://10.0.0.23:5000/acceptRequests', {
+      const response = await fetch(API_ENDPOINTS.ACCEPT_REQUESTS, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

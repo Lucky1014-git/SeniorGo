@@ -2,16 +2,17 @@ import { MaterialIcons } from '@expo/vector-icons'; // Add this import
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
+import { API_ENDPOINTS } from '../constants/api';
 
 export default function VolunteerSignUp() {
   const router = useRouter();
@@ -90,7 +91,7 @@ export default function VolunteerSignUp() {
     setSubmitting(true);
     try {
       console.log('Submitting form:', JSON.stringify(form));
-      const response = await fetch('http://10.0.0.23:5000/signUpVolunteer', {
+      const response = await fetch(API_ENDPOINTS.SIGNUP_VOLUNTEER, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, password, groupCode }),

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import type { LatLng, Region } from 'react-native-maps';
 import MapView, { Marker } from 'react-native-maps';
+import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext'; // import useUser
 
 
@@ -275,7 +276,7 @@ export default function RequestARide() {
           }
           try {
             // Only call the requestRide API, which now handles notifications/emails server-side
-            await fetch('http://10.0.0.23:5000/requestRide', {
+            await fetch(API_ENDPOINTS.REQUEST_RIDE, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -287,7 +288,7 @@ export default function RequestARide() {
             });
 
             // Send emailaddress to acceptRequests API
-            await fetch('http://10.0.0.23:5000/acceptRequests', {
+            await fetch(API_ENDPOINTS.ACCEPT_REQUESTS, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

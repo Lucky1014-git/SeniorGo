@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext';
 
 export default function ChangePassword() {
@@ -32,7 +33,7 @@ export default function ChangePassword() {
     }
     setSubmitting(true);
     try {
-      const response = await fetch('http://10.0.0.23:5000/changePassword', {
+      const response = await fetch(API_ENDPOINTS.CHANGE_PASSWORD, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

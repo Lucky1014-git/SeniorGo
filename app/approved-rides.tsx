@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext';
 
 export default function ApprovedRides() {
@@ -15,7 +16,7 @@ export default function ApprovedRides() {
     const fetchApprovedRides = async () => {
       try {
         console.log('Fetching approved rides for:', emailaddress);
-        const response = await fetch('http://10.0.0.23:5000/acceptedRequests', {
+        const response = await fetch(API_ENDPOINTS.ACCEPTED_REQUESTS, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ emailaddress }),
@@ -50,7 +51,7 @@ export default function ApprovedRides() {
 
   const handleVolunteerStarted = async (rideId: string) => {
     try {
-      const response = await fetch('http://10.0.0.23:5000/updateStatus', {
+      const response = await fetch(API_ENDPOINTS.UPDATE_STATUS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: rideId }),
@@ -71,7 +72,7 @@ export default function ApprovedRides() {
 
   const handleRideStarted = async (rideId: string) => {
     try {
-      const response = await fetch('http://10.0.0.23:5000/updateStatus', {
+      const response = await fetch(API_ENDPOINTS.UPDATE_STATUS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: rideId }),
@@ -91,7 +92,7 @@ export default function ApprovedRides() {
 
   const handleRideEnded = async (rideId: string) => {
     try {
-      const response = await fetch('http://10.0.0.23:5000/updateStatus', {
+      const response = await fetch(API_ENDPOINTS.UPDATE_STATUS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: rideId }),

@@ -2,6 +2,11 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+// TODO: Replace the endpoint URL with your actual API endpoint
+const API_ENDPOINTS = {
+  CREATE_GROUP: 'https://your-api-url.com/groups/create',
+};
+
 export default function CreateGroups() {
   const router = useRouter();
   const [groupName, setGroupName] = useState('');
@@ -16,7 +21,7 @@ export default function CreateGroups() {
     }
     setSubmitting(true);
     try {
-      const response = await fetch('http://10.0.0.23:5000/createGroup', {
+      const response = await fetch(API_ENDPOINTS.CREATE_GROUP, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

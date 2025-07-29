@@ -2,6 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { API_ENDPOINTS } from '../constants/api';
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function ForgotPassword() {
       return;
     }
     try {
-      const response = await fetch('http://10.0.0.23:5000/forgotPassword', {
+      const response = await fetch(API_ENDPOINTS.FORGOT_PASSWORD, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ emailaddress: email }),

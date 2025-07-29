@@ -2,6 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons'; // Add this import
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { API_ENDPOINTS } from '../constants/api';
 
 export default function SeniorSignUp() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function SeniorSignUp() {
     setSubmitting(true);
     console.log('Submitting form:', JSON.stringify(form));
     try {
-      const response = await fetch('http://10.0.0.23:5000/signUpSenior', {
+      const response = await fetch(API_ENDPOINTS.SIGNUP_SENIOR, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, groupCode }),

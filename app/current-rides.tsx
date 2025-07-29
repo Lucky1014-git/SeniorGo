@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext';
 
 const rideStatuses = [
@@ -24,7 +25,7 @@ export default function CurrentRides() {
     const fetchStatus = async () => {
       if (!emailaddress) return;
       try {
-        const response = await fetch('http://10.0.0.23:5000/currentRides', {
+        const response = await fetch(API_ENDPOINTS.CURRENT_RIDES, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ emailaddress }),
@@ -38,7 +39,7 @@ export default function CurrentRides() {
           await Promise.all(
             data.currentRides.map(async (ride: any) => {
               try {
-                const statusRes = await fetch('http://10.0.0.23:5000/updateStatusBar', {
+                const statusRes = await fetch(API_ENDPOINTS.UPDATE_STATUS_BAR, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ id: ride.id }),
