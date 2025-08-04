@@ -42,15 +42,20 @@ export default function CurrentRides() {
                 const statusRes = await fetch(API_ENDPOINTS.UPDATE_STATUS_BAR, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ id: ride.id }),
+                  body: JSON.stringify({ rideId: ride.id }),
                 });
                 const statusData = await statusRes.json();
+                console.log('UpdateStatusBar API response for ride', ride.id, ':', statusData);
                 if (statusData.status) {
                   updatedStatuses[ride.id] = statusData.status;
+                  console.log('Updated status for ride', ride.id, 'to:', statusData.status);
                 }
-              } catch {}
+              } catch (error) {
+                console.log('Error fetching status for ride', ride.id, ':', error);
+              }
             })
           );
+          console.log('All updated statuses:', updatedStatuses);
           setRideStatusBar(updatedStatuses);
         }
       } catch (error) {
@@ -74,18 +79,42 @@ export default function CurrentRides() {
         ) : rides.length === 0 ? (
           <Text style={{ color: '#888', alignSelf: 'center', marginTop: 32 }}>No current rides found.</Text>
         ) : (
-          rides.map((ride, idx) => {
-            const statusBar = rideStatusBar[ride.id] || ride.status;
-            const statusIndex =
-              statusBar === 'Accepted'
-                ? 0
-                : statusBar === 'VolunteerStarted'
-                ? 1
-                : statusBar === 'RideStarted'
-                ? 2
-                : statusBar === 'RideEnded'
-                ? 3
-                : -1;
+          rides
+            .filter((ride) => {
+              // Filter out rides that have ended status
+              const currentRideStatus = rideStatusBar[ride.id] || ride.status || '';
+              const status = currentRideStatus.toLowerCase();
+              return status !== 'rideended' && status !== 'ended';
+            })
+            .map((ride, idx) => {
+            // Use the status from updateStatusBar API if available, otherwise fall back to ride.status
+            const currentRideStatus = rideStatusBar[ride.id] || ride.status || '';
+            console.log('Ride', ride.id, 'currentRideStatus:', currentRideStatus, 'rideStatusBar[ride.id]:', rideStatusBar[ride.id], 'ride.status:', ride.status);
+            
+            // Determine status index based on the actual status returned from API
+            const statusIndex = (() => {
+              const status = currentRideStatus.toLowerCase();
+              console.log('Processing status for ride', ride.id, '- original:', currentRideStatus, 'lowercase:', status);
+              if (status === 'accepted') {
+                console.log('Matched accepted status for ride', ride.id);
+                return 0;
+              }
+              if (status === 'volunteerstarted') {
+                console.log('Matched volunteerstarted status for ride', ride.id);
+                return 1;
+              }
+              if (status === 'ridestarted') {
+                console.log('Matched ridestarted status for ride', ride.id);
+                return 2;
+              }
+              if (status === 'rideended') {
+                console.log('Matched rideended status for ride', ride.id);
+                return 3;
+              }
+              console.log('No status match for ride', ride.id, '- status:', status);
+              return -1; // Unknown status
+            })();
+            console.log('Final statusIndex for ride', ride.id, ':', statusIndex);
 
             // Format pickupDateTime if present
             const formatLocalDateTime = (utcString: string) => {
@@ -107,14 +136,8 @@ export default function CurrentRides() {
                 {/* Ride Progress Tracker */}
                 <View style={styles.trackerContainer}>
                   {rideStatuses.map((status, sidx) => {
-                    const rideStatus = (rideStatusBar[ride.id] || ride.status || '').toLowerCase();
-                    const isVolunteerStarted = rideStatus === 'volunteerstarted';
-                    const isRideStarted = rideStatus === 'ridestarted';
-                    // Color second bar if volunteerstarted, third bar if ridestarted
-                    const isActive =
-                      sidx <= statusIndex ||
-                      (isVolunteerStarted && sidx === 1) ||
-                      (isRideStarted && sidx === 2);
+                    // Color only the specific bar that matches the current status
+                    const isActive = sidx === statusIndex;
                     return (
                       <React.Fragment key={status.label}>
                         <View style={[

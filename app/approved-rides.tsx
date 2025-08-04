@@ -22,7 +22,23 @@ export default function ApprovedRides() {
           body: JSON.stringify({ emailaddress }),
         });
         const data = await response.json();
+        console.log('API Response:', data);
         setApprovedRides(data.acceptedRequests || []);
+        console.log('Setting approved rides:', data.acceptedRequests);
+        
+        // Initialize ride status based on the current status from API
+        if (data.acceptedRequests && Array.isArray(data.acceptedRequests)) {
+          const initialStatuses: { [key: string]: string } = {};
+          data.acceptedRequests.forEach((ride: any) => {
+            console.log('Processing ride:', ride.id, 'with status:', ride.status);
+            if (ride.status) {
+              // Normalize status to lowercase
+              initialStatuses[ride.id] = ride.status.toLowerCase();
+            }
+          });
+          console.log('Initial statuses:', initialStatuses);
+          setRideStatus(initialStatuses);
+        }
       } catch (error) {
         Alert.alert('Error', 'Failed to load approved rides.');
       }
@@ -51,17 +67,23 @@ export default function ApprovedRides() {
 
   const handleVolunteerStarted = async (rideId: string) => {
     try {
+      console.log('Updating ride status for volunteer:', { rideId });
+      console.log('Current status before update:', rideStatus[rideId]);
+      const currentStatus = rideStatus[rideId] || 'accepted';
       const response = await fetch(API_ENDPOINTS.UPDATE_STATUS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: rideId }),
+        body: JSON.stringify({ 
+          rideId: rideId,
+          currentStatus: currentStatus
+        }),
       });
       const data = await response.json();
       if (response.ok && response.status === 200) {
-        // If API returns rideEnded, update status accordingly
-        const newStatus = (data.status && data.status.toLowerCase() === 'rideended') ? 'rideEnded' : 'volunteerStarted';
+        // Use the new_status returned by the API, normalized to lowercase
+        const newStatus = data.new_status ? data.new_status.toLowerCase() : 'volunteerstarted';
         setRideStatus(prev => ({ ...prev, [rideId]: newStatus }));
-        Alert.alert('Success', newStatus === 'rideEnded' ? 'Ride ended status updated.' : 'Volunteer started status updated.');
+        Alert.alert('Success', 'Status updated successfully.');
       } else {
         Alert.alert('Error', data.message || 'Failed to update status.');
       }
@@ -72,16 +94,22 @@ export default function ApprovedRides() {
 
   const handleRideStarted = async (rideId: string) => {
     try {
+      const currentStatus = rideStatus[rideId] || 'volunteerstarted';
+      console.log('Updating ride status:', { rideId, currentStatus });
       const response = await fetch(API_ENDPOINTS.UPDATE_STATUS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: rideId }),
+        body: JSON.stringify({ 
+          rideId: rideId,
+          currentStatus: currentStatus
+        }),
       });
       const data = await response.json();
       if (response.ok && response.status === 200) {
-        const newStatus = (data.status && data.status.toLowerCase() === 'rideended') ? 'rideEnded' : 'rideEnded';
+        // Use the new_status returned by the API, normalized to lowercase
+        const newStatus = data.new_status ? data.new_status.toLowerCase() : 'ridestarted';
         setRideStatus(prev => ({ ...prev, [rideId]: newStatus }));
-        Alert.alert('Success', 'Ride ended status updated.');
+        Alert.alert('Success', 'Status updated successfully.');
       } else {
         Alert.alert('Error', data.message || 'Failed to update status.');
       }
@@ -92,16 +120,21 @@ export default function ApprovedRides() {
 
   const handleRideEnded = async (rideId: string) => {
     try {
+      const currentStatus = rideStatus[rideId] || 'ridestarted';
       const response = await fetch(API_ENDPOINTS.UPDATE_STATUS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: rideId }),
+        body: JSON.stringify({ 
+          rideId: rideId,
+          currentStatus: currentStatus
+        }),
       });
       const data = await response.json();
       if (response.ok && response.status === 200) {
-        const newStatus = (data.status && data.status.toLowerCase() === 'rideended') ? 'rideEnded' : 'rideEnded';
+        // Use the new_status returned by the API, normalized to lowercase
+        const newStatus = data.new_status ? data.new_status.toLowerCase() : 'rideended';
         setRideStatus(prev => ({ ...prev, [rideId]: newStatus }));
-        Alert.alert('Success', 'Ride ended status updated.');
+        Alert.alert('Success', 'Status updated successfully.');
       } else {
         Alert.alert('Error', data.message || 'Failed to update status.');
       }
@@ -111,18 +144,35 @@ export default function ApprovedRides() {
   };
 
   const renderRide = ({ item }: { item: any }) => {
-    const status = rideStatus[item.id] || 'accepted';
+    // Use the status from state if available, otherwise fall back to item status, then default to 'approved'
+    const rawStatus = rideStatus[item.id] || item.status || 'approved';
+    const status = typeof rawStatus === 'string' ? rawStatus.toLowerCase() : 'approved'; // Ensure it's a string before toLowerCase
+    console.log('Ride ID:', item.id, 'Raw Status:', rawStatus, 'Normalized Status:', status, 'Type:', typeof status);
+    
     let buttonText = '';
     let buttonHandler = undefined;
+    
     if (status === 'accepted') {
       buttonText = 'Volunteer Started';
       buttonHandler = () => handleVolunteerStarted(item.id);
-    } else if (status === 'volunteerStarted') {
+    } else if (status === 'volunteerstarted') {
       buttonText = 'Ride Started';
       buttonHandler = () => handleRideStarted(item.id);
-    } else if (status === 'rideStarted' || status === 'rideEnded') {
+    } else if (status === 'ridestarted') {
       buttonText = 'Ride Ended';
-      buttonHandler = undefined;
+      buttonHandler = () => handleRideEnded(item.id);
+    } else if (status === 'rideended') {
+      buttonText = 'Remove Ride';
+      buttonHandler = () => {
+        // Remove the ride when clicked again
+        setApprovedRides(prev => prev.filter(ride => ride.id !== item.id));
+        Alert.alert('Success', 'Ride removed from list.');
+      };
+    } else {
+      // Default case for any unexpected status
+      buttonText = 'Volunteer Started';
+      buttonHandler = () => handleVolunteerStarted(item.id);
+      console.warn('Unexpected status:', status, 'for ride:', item.id);
     }
     return (
       <View style={styles.card}>
@@ -137,7 +187,7 @@ export default function ApprovedRides() {
         <TouchableOpacity
           style={styles.volunteerButton}
           onPress={buttonHandler}
-          disabled={status === 'rideStarted' || status === 'rideEnded'}
+          disabled={false}
         >
           <Text style={styles.volunteerButtonText}>{buttonText}</Text>
         </TouchableOpacity>
