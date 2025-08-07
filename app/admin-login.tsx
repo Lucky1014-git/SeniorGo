@@ -35,6 +35,11 @@ export default function AdminLogin() {
 
   return (
     <View style={styles.container}>
+      {/* Back Arrow */}
+      <TouchableOpacity style={styles.backArrow} onPress={() => router.replace('/')}>
+        <Text style={styles.backArrowText}>←</Text>
+      </TouchableOpacity>
+      
       <Text style={styles.header}>Admin Login</Text>
       <TextInput
         style={styles.input}
@@ -70,6 +75,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
+  },
+  backArrow: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    padding: 8,
+    zIndex: 1,
+  },
+  backArrowText: {
+    fontSize: 28,
+    color: '#2F5233',
   },
   header: {
     fontSize: 28,

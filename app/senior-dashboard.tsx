@@ -43,30 +43,36 @@ export default function SeniorDashboard() {
             style={styles.cardLarge}
             onPress={() => router.push('/request_a_ride')}
           > 
-            <Text style={styles.cardIcon}>🚗</Text>
+            <View style={styles.iconContainer}>
+              <Text style={styles.cardIcon}>🚗</Text>
+            </View>
             <Text style={styles.cardTitle}>Request a Ride</Text>
             <Text style={styles.cardDesc}>Tap to request a ride</Text>
           </TouchableOpacity>
 
           {/* Past Rides */}
-          <View style={styles.cardSmall}>
-            <Text style={styles.cardIconSmall}>📜</Text>
-            <Text style={styles.cardTitleSmall}>Past Rides</Text>
-            <Text style={styles.cardSummary}>{ridesThisWeek} rides this week</Text>
+          <View style={styles.cardLarge}>
+            <View style={styles.iconContainer}>
+              <Text style={styles.cardIcon}>📜</Text>
+            </View>
+            <Text style={styles.cardTitle}>Past Rides</Text>
+            <Text style={styles.cardDesc}>{ridesThisWeek} rides this week</Text>
             <Text style={styles.cardLink}>View full history</Text>
           </View>
 
           {/* Track Current Ride */}
           <TouchableOpacity
-            style={styles.cardSmall}
+            style={styles.cardLarge}
             onPress={() => router.push('/current-rides')}
           >
-            <Text style={styles.cardIconSmall}>📍</Text>
-            <Text style={styles.cardTitleSmall}>Track Current Ride</Text>
+            <View style={styles.iconContainer}>
+              <Text style={styles.cardIcon}>📍</Text>
+            </View>
+            <Text style={styles.cardTitle}>Track Current Ride</Text>
             {hasActiveRide ? (
-              <Text style={styles.cardSummary}>Live location: {currentRideLocation}</Text>
+              <Text style={styles.cardDesc}>Live location: {currentRideLocation}</Text>
             ) : (
-              <Text style={styles.cardSummary}>No current ride</Text>
+              <Text style={styles.cardDesc}>No current ride</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -106,25 +112,33 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   cardsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   cardLarge: {
     width: '100%',
     backgroundColor: '#FFFDF6',
     borderRadius: 16,
-    padding: 28,
-    marginBottom: 20,
+    padding: 20,
+    marginBottom: 15,
     alignItems: 'center',
     elevation: 2,
     shadowColor: '#000',
     shadowOpacity: 0.07,
     shadowRadius: 4,
   },
+  iconContainer: {
+    backgroundColor: '#2F5233',
+    borderRadius: 50,
+    width: 60,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
   cardIcon: {
-    fontSize: 48,
-    marginBottom: 10,
+    fontSize: 30,
+    marginBottom: 0,
   },
   cardTitle: {
     fontSize: 22,
@@ -135,33 +149,6 @@ const styles = StyleSheet.create({
   cardDesc: {
     fontSize: 16,
     color: '#2F5233',
-  },
-  cardSmall: {
-    width: '48%',
-    backgroundColor: '#FFFDF6',
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 10,
-    alignItems: 'center',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  cardIconSmall: {
-    fontSize: 32,
-    marginBottom: 6,
-  },
-  cardTitleSmall: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#2F5233',
-    marginBottom: 2,
-  },
-  cardSummary: {
-    fontSize: 14,
-    color: '#2F5233',
-    marginBottom: 2,
   },
   cardLink: {
     fontSize: 13,

@@ -119,8 +119,7 @@ export default function RequestARide() {
   const handleError = (message: string) => {
     Alert.alert('Error', message, [
       {
-        text: 'Go to Dashboard',
-        onPress: () => router.replace('/senior-dashboard'),
+        text: 'OK',
       },
     ]);
   };
@@ -145,6 +144,9 @@ export default function RequestARide() {
           fetchAddressSuggestions(text);
         }}
         onFocus={handleCurrentLocationFocus}
+        multiline={true}
+        numberOfLines={3}
+        textAlignVertical="top"
       />
       {addressSuggestions.length > 0 && (
         <FlatList
@@ -173,6 +175,9 @@ export default function RequestARide() {
           setDropoffQuery(text);
           fetchDropoffSuggestions(text);
         }}
+        multiline={true}
+        numberOfLines={3}
+        textAlignVertical="top"
       />
       {dropoffSuggestions.length > 0 && (
         <FlatList
@@ -199,7 +204,7 @@ export default function RequestARide() {
         onPress={() => setShowDatePicker(true)}
       >
         <Text style={styles.timePickerButtonText}>
-          Select Pick Up Date{pickupTime && !showDatePicker ? ` (${pickupTime.getMonth() + 1}/${pickupTime.getDate()}/${pickupTime.getFullYear()})` : ''}
+          Date{pickupTime && !showDatePicker ? ` (${pickupTime.getMonth() + 1}/${pickupTime.getDate()}/${pickupTime.getFullYear()})` : ''}
         </Text>
       </TouchableOpacity>
       {showDatePicker && (
@@ -231,9 +236,9 @@ export default function RequestARide() {
               // Defensive: formatted should have at least 3 elements
               const hour = formatted[1] || '';
               const ampm = formatted[2] || '';
-              return `Select Pick Up Time (${hour} ${ampm})`;
+              return `Time (${hour} ${ampm})`;
             }
-            return 'Select Pick Up Time';
+            return 'Time';
           })()}
         </Text>
       </TouchableOpacity>
@@ -274,6 +279,14 @@ export default function RequestARide() {
             handleError('Please enter both pickup and dropoff locations.');
             return;
           }
+          
+          // Validate that pickup time is in the future
+          const now = new Date();
+          if (pickupTime <= now) {
+            handleError('Please select a pickup date and time that is in the future.');
+            return;
+          }
+          
           try {
             // Only call the requestRide API, which now handles notifications/emails server-side
             await fetch(API_ENDPOINTS.REQUEST_RIDE, {
@@ -326,7 +339,7 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '700',
     color: '#2F5233',
     marginBottom: 20,
@@ -340,6 +353,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#FFFDF6',
     fontSize: 16,
+    minHeight: 72,
   },
   map: {
     width: '90%',
