@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
+import { ButtonStyles, ContainerStyles, FormStyles, InputStyles, TextStyles } from '../styles/globalStyles';
 
 export default function SeniorSignUp() {
   const router = useRouter();
@@ -71,110 +72,36 @@ export default function SeniorSignUp() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={ContainerStyles.signupContainer}>
       {/* Signout Icon Button */}
-      <TouchableOpacity style={styles.signoutButton} onPress={handleSignOut}>
+      <TouchableOpacity style={ButtonStyles.signoutButton} onPress={handleSignOut}>
         <MaterialIcons name="logout" size={22} color="#2F5233" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.backArrow} onPress={() => router.back()}>
-        <Text style={styles.backArrowText}>{'←'}</Text>
+      <TouchableOpacity style={ButtonStyles.backArrowAlt} onPress={() => router.back()}>
+        <Text style={ButtonStyles.backArrowText}>{'←'}</Text>
       </TouchableOpacity>
-      <Text style={styles.header}>Senior Sign Up</Text>
-      <TextInput style={styles.input} placeholder="Full Name" value={form.fullName} onChangeText={t => handleChange('fullName', t)} />
-      <TextInput style={styles.input} placeholder="Phone Number" value={form.phone} onChangeText={t => handleChange('phone', t)} keyboardType="phone-pad" />
-      <TextInput style={styles.input} placeholder="Email" value={form.email} onChangeText={t => handleChange('email', t)} keyboardType="email-address" autoCapitalize="none" />
-      <TextInput style={styles.input} placeholder="Password" value={form.password} onChangeText={t => handleChange('password', t)} secureTextEntry />
-      <TextInput style={styles.input} placeholder="Confirm Password" value={form.confirmPassword} onChangeText={t => handleChange('confirmPassword', t)} secureTextEntry />
-      <TextInput style={styles.input} placeholder="Home Address or ZIP Code" value={form.address} onChangeText={t => handleChange('address', t)} />
-      <TextInput style={styles.input} placeholder="Group Code" value={groupCode} onChangeText={setGroupCode} />
-      <View style={styles.checkboxContainer}>
-        <TouchableOpacity onPress={() => handleChange('agree', !form.agree)} style={styles.customCheckbox}>
-          <Text style={styles.checkboxIcon}>{form.agree ? '🔘' : '⭕'}</Text>
+      <Text style={TextStyles.header}>Senior Sign Up</Text>
+      <TextInput style={InputStyles.inputAlt} placeholder="Full Name" value={form.fullName} onChangeText={t => handleChange('fullName', t)} />
+      <TextInput style={InputStyles.inputAlt} placeholder="Phone Number" value={form.phone} onChangeText={t => handleChange('phone', t)} keyboardType="phone-pad" />
+      <TextInput style={InputStyles.inputAlt} placeholder="Email" value={form.email} onChangeText={t => handleChange('email', t)} keyboardType="email-address" autoCapitalize="none" />
+      <TextInput style={InputStyles.inputAlt} placeholder="Password" value={form.password} onChangeText={t => handleChange('password', t)} secureTextEntry />
+      <TextInput style={InputStyles.inputAlt} placeholder="Confirm Password" value={form.confirmPassword} onChangeText={t => handleChange('confirmPassword', t)} secureTextEntry />
+      <TextInput style={InputStyles.inputAlt} placeholder="Home Address or ZIP Code" value={form.address} onChangeText={t => handleChange('address', t)} />
+      <TextInput style={InputStyles.inputAlt} placeholder="Group Code" value={groupCode} onChangeText={setGroupCode} />
+      <View style={FormStyles.checkboxContainer}>
+        <TouchableOpacity onPress={() => handleChange('agree', !form.agree)} style={FormStyles.customCheckbox}>
+          <Text style={FormStyles.checkboxIcon}>{form.agree ? '🔘' : '⭕'}</Text>
         </TouchableOpacity>
-        <Text style={styles.checkboxLabel}>I agree to the Terms of Service & Privacy Policy</Text>
+        <Text style={FormStyles.checkboxLabel}>I agree to the Terms of Service & Privacy Policy</Text>
       </View>
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={submitting}>
-        <Text style={styles.submitButtonText}>{submitting ? 'Submitting...' : 'Submit'}</Text>
+      <TouchableOpacity style={ButtonStyles.submitButton} onPress={handleSubmit} disabled={submitting}>
+        <Text style={ButtonStyles.submitButtonText}>{submitting ? 'Submitting...' : 'Submit'}</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
+// Any remaining page-specific styles that aren't in global styles
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#DFF5E3',
-  },
-  header: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#2F5233',
-    marginBottom: 20,
-  },
-  input: {
-    width: '100%',
-    padding: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#2F5233',
-    borderRadius: 8,
-    backgroundColor: '#FFFDF6',
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  customCheckbox: {
-    marginRight: 8,
-  },
-  checkboxIcon: {
-    fontSize: 22,
-  },
-  checkboxLabel: {
-    color: '#2F5233',
-  },
-  submitButton: {
-    backgroundColor: '#2F5233',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  backArrow: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    padding: 8,
-    zIndex: 10,
-  },
-  backArrowText: {
-    fontSize: 32,
-    color: '#2F5233',
-  },
-  submitButtonText: {
-    color: '#FFFDF6',
-    fontWeight: '600',
-    fontSize: 18,
-  },
-  signoutButton: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    zIndex: 10,
-    padding: 6,
-    backgroundColor: '#FFFDF6',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#2F5233',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  signoutIcon: {
-    fontSize: 22,
-    color: '#2F5233',
-  },
+  // Add any unique styles for this page here if needed
 });

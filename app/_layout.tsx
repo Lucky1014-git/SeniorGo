@@ -5,8 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserProvider } from '../contexts/usercontext'; // Adjust the import path as needed
 
 export default function Layout() {
+  console.log('Layout component rendering...');
   return (
-    <UserProvider> {/* ✅ Wrap the app in your global user context */}
+    <UserProvider>
       <SafeAreaView style={{ flex: 1 }}>
         <StatusBar style="dark" />
         <View style={styles.container}>

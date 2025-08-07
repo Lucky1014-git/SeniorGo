@@ -10,6 +10,7 @@ export default function SeniorDashboard() {
 
   // Fallbacks for missing data
   const name = getUserInfo()?.fullname || 'Senior';
+  const groupName = getUserInfo()?.groupname || 'No Group Assigned';
   const ridesThisWeek = 0;//userInfo()?.ridesThisWeek || 0;
   const hasActiveRide = true;//!!userInfo()?.hasActiveRide;
   const currentRideLocation = '';//userInfo()?.currentRideLocation || '';
@@ -20,52 +21,56 @@ export default function SeniorDashboard() {
   };
 
   return (
-  <View style={styles.container}>
+    <View style={styles.container}>
       {/* Signout Icon Button */}
       <TouchableOpacity style={styles.signoutButton} onPress={handleSignOut}>
         <MaterialIcons name="logout" size={22} color="#2F5233" />
       </TouchableOpacity>
-    {/* Top Navigation Bar */}
-    <View style={styles.navBar}>
-      <Text style={styles.navBarText}>Welcome, {name}!</Text>
-    </View>
-
-    {/* Cards Grid */}
-    <View style={styles.cardsGrid}>
-      {/* Request a Ride */}
-      <TouchableOpacity
-        style={styles.cardLarge}
-        onPress={() => router.push('/request_a_ride')}
-      > 
-
-        <Text style={styles.cardIcon}>🚗</Text>
-        <Text style={styles.cardTitle}>Request a Ride</Text>
-        <Text style={styles.cardDesc}>Tap to request a ride</Text>
-      </TouchableOpacity>
-
-      {/* Past Rides */}
-      <View style={styles.cardSmall}>
-        <Text style={styles.cardIconSmall}>📜</Text>
-        <Text style={styles.cardTitleSmall}>Past Rides</Text>
-        <Text style={styles.cardSummary}>{ridesThisWeek} rides this week</Text>
-        <Text style={styles.cardLink}>View full history</Text>
+      
+      {/* Welcome Section */}
+      <View style={styles.navBar}>
+        <Text style={styles.navBarText}>Welcome, {name}!</Text>
+        <View style={styles.groupContainer}>
+          <Text style={styles.groupLabel}>Group:</Text>
+          <Text style={styles.groupName}>{groupName}</Text>
+        </View>
       </View>
 
-      {/* Track Current Ride */}
-      <TouchableOpacity
-        style={styles.cardSmall}
-        onPress={() => router.push('/current-rides')}
-      >
-        <Text style={styles.cardIconSmall}>📍</Text>
-        <Text style={styles.cardTitleSmall}>Track Current Ride</Text>
-        {hasActiveRide ? (
-          <Text style={styles.cardSummary}>Live location: {currentRideLocation}</Text>
-        ) : (
-          <Text style={styles.cardSummary}>No current ride</Text>
-        )}
-      </TouchableOpacity>
+      {/* Cards Grid */}
+      <View style={styles.cardsGrid}>
+          {/* Request a Ride */}
+          <TouchableOpacity
+            style={styles.cardLarge}
+            onPress={() => router.push('/request_a_ride')}
+          > 
+            <Text style={styles.cardIcon}>🚗</Text>
+            <Text style={styles.cardTitle}>Request a Ride</Text>
+            <Text style={styles.cardDesc}>Tap to request a ride</Text>
+          </TouchableOpacity>
+
+          {/* Past Rides */}
+          <View style={styles.cardSmall}>
+            <Text style={styles.cardIconSmall}>📜</Text>
+            <Text style={styles.cardTitleSmall}>Past Rides</Text>
+            <Text style={styles.cardSummary}>{ridesThisWeek} rides this week</Text>
+            <Text style={styles.cardLink}>View full history</Text>
+          </View>
+
+          {/* Track Current Ride */}
+          <TouchableOpacity
+            style={styles.cardSmall}
+            onPress={() => router.push('/current-rides')}
+          >
+            <Text style={styles.cardIconSmall}>📍</Text>
+            <Text style={styles.cardTitleSmall}>Track Current Ride</Text>
+            {hasActiveRide ? (
+              <Text style={styles.cardSummary}>Live location: {currentRideLocation}</Text>
+            ) : (
+              <Text style={styles.cardSummary}>No current ride</Text>
+            )}
+          </TouchableOpacity>
+        </View>
     </View>
-  </View>
   );
 }
 
@@ -81,9 +86,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   navBarText: {
-    fontSize: 32,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#2F5233',
+  },
+  groupContainer: {
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  groupLabel: {
+    fontSize: 14,
+    color: '#2F5233',
+    fontWeight: '500',
+  },
+  groupName: {
+    fontSize: 18,
+    color: '#1B7F5B',
+    fontWeight: '600',
+    marginTop: 2,
   },
   cardsGrid: {
     flexDirection: 'row',
@@ -161,10 +181,6 @@ const styles = StyleSheet.create({
     borderColor: '#2F5233',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  signoutIcon: {
-    fontSize: 22,
-    color: '#2F5233',
   },
 });
 

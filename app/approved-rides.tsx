@@ -3,11 +3,14 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext';
+import { ButtonStyles, ContainerStyles, TextStyles } from '../styles/globalStyles';
 
 export default function ApprovedRides() {
+  console.log('ApprovedRides component rendering...');
   const router = useRouter();
   const { getUserInfo } = useUser();
   const emailaddress = getUserInfo()?.emailaddress;
+  console.log('Email address:', emailaddress);
   const [approvedRides, setApprovedRides] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [rideStatus, setRideStatus] = useState<{ [key: string]: string }>({});
@@ -196,11 +199,11 @@ export default function ApprovedRides() {
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.backArrow} onPress={goBack}>
+    <View style={ContainerStyles.screenContainer}>
+      <TouchableOpacity style={ButtonStyles.backArrow} onPress={goBack}>
         <Text style={{ fontSize: 28, color: '#2F5233' }}>{'\u2190'}</Text>
       </TouchableOpacity>
-      <Text style={styles.header}>Accepted Rides</Text>
+      <Text style={TextStyles.header}>Accepted Rides</Text>
       {loading ? (
         <ActivityIndicator size="large" color="#2F5233" style={{ marginTop: 40 }} />
       ) : approvedRides.length > 0 ? (
@@ -212,8 +215,8 @@ export default function ApprovedRides() {
           showsVerticalScrollIndicator={false}
         />
       ) : (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No approved rides found.</Text>
+        <View style={ContainerStyles.emptyState}>
+          <Text style={TextStyles.emptyText}>No approved rides found.</Text>
         </View>
       )}
     </View>

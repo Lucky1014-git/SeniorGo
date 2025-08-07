@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext';
+import { ButtonStyles, ContainerStyles, InputStyles, LayoutStyles, TextStyles } from '../styles/globalStyles';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -48,13 +49,12 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Sign Up Button moved below */}
-      <Text style={styles.title}>SeniorGo</Text>
-      <Text style={styles.subtitle}>Welcome! Please log in</Text>
+    <View style={ContainerStyles.centerContainer}>
+      <Text style={TextStyles.title}>SeniorGo</Text>
+      <Text style={TextStyles.subtitle}>Welcome! Please log in</Text>
 
       <TextInput
-        style={styles.input}
+        style={InputStyles.input}
         placeholder="Email Address"
         keyboardType="email-address"
         autoCapitalize="none"
@@ -63,7 +63,7 @@ export default function LoginScreen() {
       />
 
       <TextInput
-        style={styles.input}
+        style={InputStyles.input}
         placeholder="Password"
         secureTextEntry
         autoCapitalize="none"
@@ -71,101 +71,28 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
 
-      <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={submitting}>
-          <Text style={styles.loginText}>{submitting ? 'Submitting...' : 'Submit'}</Text>
+      <View style={LayoutStyles.buttonRow}>
+        <TouchableOpacity style={[ButtonStyles.primaryButton, { marginRight: 10 }]} onPress={handleLogin} disabled={submitting}>
+          <Text style={ButtonStyles.primaryButtonText}>{submitting ? 'Submitting...' : 'Submit'}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.signupButtonAlt} onPress={() => router.replace('/sign_up')}>
-          <Text style={styles.signupTextAlt}>Sign Up</Text>
+        <TouchableOpacity style={ButtonStyles.secondaryButton} onPress={() => router.replace('/sign_up_type')}>
+          <Text style={ButtonStyles.secondaryButtonText}>Sign Up</Text>
         </TouchableOpacity>
       </View>
       <TouchableOpacity onPress={() => router.replace('/forgot-password')}>
-        <Text style={styles.forgotPasswordLink}>Forgot password?</Text>
+        <Text style={TextStyles.link}>Forgot password?</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => router.replace('/admin-login')}>
-        <Text style={styles.adminLoginLink}>Admin login</Text>
+        <Text style={TextStyles.link}>Admin login</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
+// Any remaining page-specific styles that aren't in global styles
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFDF6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: '600',
-    color: '#2F5233',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#2F5233',
-    marginBottom: 30,
-  },
-  input: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#2F5233',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 20,
-    backgroundColor: '#FFF',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-    gap: 10, // If gap doesn't work, use marginRight on loginButton
-  },
-  loginButton: {
-    backgroundColor: '#2F5233',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 10,
-    marginRight: 10, // Space between buttons
-  },
-  loginText: {
-    color: '#FFFDF6',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  signupButtonAlt: {
-    backgroundColor: '#FFFDF6',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#2F5233',
-  },
-  signupTextAlt: {
-    color: '#2F5233',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  forgotPasswordLink: {
-    color: '#1B7F5B',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 12,
-    textDecorationLine: 'underline',
-  },
-  adminLoginLink: {
-    color: '#2F5233',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 8,
-    textDecorationLine: 'underline',
-    fontWeight: '600',
-  },
+  // Add any unique styles for this page here if needed
 });
 
 
