@@ -10,8 +10,8 @@ const isDevelopment = __DEV__ || process.env.NODE_ENV === 'development';
 
 // Base URLs for different services
 export const API_BASE_URLS = {
-  AUTH_SERVICE: 'https://230d71c19c03.ngrok-free.app',
-  MAIN_SERVICE: 'https://230d71c19c03.ngrok-free.app',
+  AUTH_SERVICE: 'https://6ef1b12f29a6.ngrok-free.app',
+  MAIN_SERVICE: 'https://6ef1b12f29a6.ngrok-free.app',
 } as const;
 
 // API Endpoints
