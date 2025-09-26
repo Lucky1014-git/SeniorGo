@@ -21,6 +21,27 @@ function format12Hour(date: Date) {
   return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()} ${hours}:${minStr} ${ampm}`;
 }
 
+// Helper to format date in "10th Aug 1997" format
+function formatDateDisplay(date: Date) {
+  const day = date.getDate();
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  
+  // Add ordinal suffix to day
+  const getOrdinalSuffix = (day: number) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  };
+  
+  return `${day}${getOrdinalSuffix(day)} ${month} ${year}`;
+}
+
 export default function RequestARide() {
   const router = useRouter();
   const { getUserInfo } = useUser(); // get getUserInfo from context
@@ -40,6 +61,7 @@ export default function RequestARide() {
   const [addressQuery, setAddressQuery] = useState('');
   const [dropoffSuggestions, setDropoffSuggestions] = useState<any[]>([]);
   const [dropoffQuery, setDropoffQuery] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -135,76 +157,84 @@ export default function RequestARide() {
         <Text style={styles.backArrowText}>←</Text>
       </TouchableOpacity>
       <Text style={styles.title}>Request a Ride</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Current Location"
-        value={addressQuery}
-        onChangeText={text => {
-          setAddressQuery(text);
-          fetchAddressSuggestions(text);
-        }}
-        onFocus={handleCurrentLocationFocus}
-        multiline={true}
-        numberOfLines={3}
-        textAlignVertical="top"
-      />
-      {addressSuggestions.length > 0 && (
-        <FlatList
-          data={addressSuggestions}
-          keyExtractor={item => item.osm_id?.toString() || item.display_name}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.suggestionItem}
-              onPress={() => {
-                setAddressQuery(item.display_name);
-                setAddressSuggestions([]);
-                setCurrentLocation(item.display_name);
-              }}
-            >
-              <Text>{item.display_name}</Text>
-            </TouchableOpacity>
-          )}
-          style={styles.suggestionList}
+      
+      {/* Current Location Container */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Current Location"
+          value={addressQuery}
+          onChangeText={text => {
+            setAddressQuery(text);
+            fetchAddressSuggestions(text);
+          }}
+          onFocus={handleCurrentLocationFocus}
+          multiline={true}
+          numberOfLines={3}
+          textAlignVertical="top"
         />
-      )}
-      <TextInput
-        style={styles.input}
-        placeholder="Dropoff Location"
-        value={dropoffQuery}
-        onChangeText={text => {
-          setDropoffQuery(text);
-          fetchDropoffSuggestions(text);
-        }}
-        multiline={true}
-        numberOfLines={3}
-        textAlignVertical="top"
-      />
-      {dropoffSuggestions.length > 0 && (
-        <FlatList
-          data={dropoffSuggestions}
-          keyExtractor={item => item.osm_id?.toString() || item.display_name}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.suggestionItem}
-              onPress={() => {
-                setDropoffQuery(item.display_name);
-                setDropoffSuggestions([]);
-                setDropoffLocation(item.display_name);
-              }}
-            >
-              <Text>{item.display_name}</Text>
-            </TouchableOpacity>
-          )}
-          style={styles.suggestionList}
+        {addressSuggestions.length > 0 && (
+          <FlatList
+            data={addressSuggestions}
+            keyExtractor={item => item.osm_id?.toString() || item.display_name}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.suggestionItem}
+                onPress={() => {
+                  setAddressQuery(item.display_name);
+                  setAddressSuggestions([]);
+                  setCurrentLocation(item.display_name);
+                }}
+              >
+                <Text>{item.display_name}</Text>
+              </TouchableOpacity>
+            )}
+            style={styles.suggestionList}
+          />
+        )}
+      </View>
+      
+      {/* Dropoff Location Container */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Dropoff Location"
+          value={dropoffQuery}
+          onChangeText={text => {
+            setDropoffQuery(text);
+            fetchDropoffSuggestions(text);
+          }}
+          multiline={true}
+          numberOfLines={3}
+          textAlignVertical="top"
         />
-      )}
+        {dropoffSuggestions.length > 0 && (
+          <FlatList
+            data={dropoffSuggestions}
+            keyExtractor={item => item.osm_id?.toString() || item.display_name}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.suggestionItem}
+                onPress={() => {
+                  setDropoffQuery(item.display_name);
+                  setDropoffSuggestions([]);
+                  setDropoffLocation(item.display_name);
+                }}
+              >
+                <Text>{item.display_name}</Text>
+              </TouchableOpacity>
+            )}
+            style={styles.suggestionList}
+          />
+        )}
+      </View>
       {/* Pick Up Date button */}
       <TouchableOpacity
         style={styles.timePickerButton}
         onPress={() => setShowDatePicker(true)}
       >
         <Text style={styles.timePickerButtonText}>
-          Date{pickupTime && !showDatePicker ? ` (${pickupTime.getMonth() + 1}/${pickupTime.getDate()}/${pickupTime.getFullYear()})` : ''}
+          Date{pickupTime && !showDatePicker ? ` (${formatDateDisplay(pickupTime)})` : ''}
         </Text>
       </TouchableOpacity>
       {showDatePicker && (
@@ -273,8 +303,10 @@ export default function RequestARide() {
 
       {/* Submit Button */}
       <TouchableOpacity
-        style={styles.submitButton}
+        style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
         onPress={async () => {
+          if (isSubmitting) return; // Prevent double submission
+          
           if (!currentLocation || !dropoffLocation) {
             handleError('Please enter both pickup and dropoff locations.');
             return;
@@ -287,7 +319,10 @@ export default function RequestARide() {
             return;
           }
           
+          setIsSubmitting(true);
+          
           try {
+            console.log('DEBUG: Starting ride request API call...');
             // Only call the requestRide API, which now handles notifications/emails server-side
             await fetch(API_ENDPOINTS.REQUEST_RIDE, {
               method: 'POST',
@@ -309,10 +344,12 @@ export default function RequestARide() {
               }),
             });
 
+            setIsSubmitting(false);
+
             // Show success message, then navigate to dashboard
             Alert.alert(
               'Success',
-              'Your ride will be here soon.',
+              'Your ride request has been created successfully.',
               [
                 {
                   text: 'OK',
@@ -321,11 +358,15 @@ export default function RequestARide() {
               ]
             );
           } catch (e) {
+            setIsSubmitting(false);
             handleError('There was a problem requesting your ride. Please try again.');
           }
         }}
+        disabled={isSubmitting}
       >
-        <Text style={styles.submitButtonText}>Submit</Text>
+        <Text style={styles.submitButtonText}>
+          {isSubmitting ? 'Creating Request...' : 'Submit'}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -344,10 +385,16 @@ const styles = StyleSheet.create({
     color: '#2F5233',
     marginBottom: 20,
   },
-  input: {
+  inputContainer: {
     width: '90%',
-    padding: 10,
+    position: 'relative',
     marginBottom: 12,
+    zIndex: 1,
+  },
+  input: {
+    width: '100%',
+    padding: 10,
+    marginBottom: 0,
     borderWidth: 1,
     borderColor: '#2F5233',
     borderRadius: 8,
@@ -403,14 +450,17 @@ const styles = StyleSheet.create({
     fontSize: 15, // reduced from 16
   },
   suggestionList: {
-    width: '90%',
+    width: '100%',
     maxHeight: 120,
     backgroundColor: '#FFFDF6',
     borderColor: '#2F5233',
     borderWidth: 1,
     borderRadius: 8,
-    marginBottom: 8,
-    zIndex: 10,
+    marginTop: 2,
+    zIndex: 1000,
+    elevation: 5,
+    position: 'absolute',
+    bottom: 72,
   },
   suggestionItem: {
     padding: 10,
@@ -436,6 +486,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 18,
     marginBottom: 24,
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#9CA3AF',
+    opacity: 0.7,
   },
   submitButtonText: {
     color: '#FFFDF6',

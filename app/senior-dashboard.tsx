@@ -47,18 +47,7 @@ export default function SeniorDashboard() {
               <Text style={styles.cardIcon}>🚗</Text>
             </View>
             <Text style={styles.cardTitle}>Request a Ride</Text>
-            <Text style={styles.cardDesc}>Tap to request a ride</Text>
           </TouchableOpacity>
-
-          {/* Past Rides */}
-          <View style={styles.cardLarge}>
-            <View style={styles.iconContainer}>
-              <Text style={styles.cardIcon}>📜</Text>
-            </View>
-            <Text style={styles.cardTitle}>Past Rides</Text>
-            <Text style={styles.cardDesc}>{ridesThisWeek} rides this week</Text>
-            <Text style={styles.cardLink}>View full history</Text>
-          </View>
 
           {/* Track Current Ride */}
           <TouchableOpacity
@@ -66,15 +55,29 @@ export default function SeniorDashboard() {
             onPress={() => router.push('/current-rides')}
           >
             <View style={styles.iconContainer}>
-              <Text style={styles.cardIcon}>📍</Text>
+              <Text style={styles.cardIcon}>�</Text>
             </View>
             <Text style={styles.cardTitle}>Track Current Ride</Text>
-            {hasActiveRide ? (
-              <Text style={styles.cardDesc}>Live location: {currentRideLocation}</Text>
-            ) : (
-              <Text style={styles.cardDesc}>No current ride</Text>
-            )}
           </TouchableOpacity>
+
+          {/* Request Recurring Ride */}
+          <TouchableOpacity
+            style={styles.cardLarge}
+            onPress={() => router.push('/recurring-ride')}
+          >
+            <View style={styles.iconContainer}>
+              <Text style={styles.cardIcon}>�</Text>
+            </View>
+            <Text style={styles.cardTitle}>Request Recurring Ride</Text>
+          </TouchableOpacity>
+
+          {/* Past Rides */}
+          <View style={styles.cardLarge}>
+            <View style={styles.iconContainer}>
+              <Text style={styles.cardIcon}>�</Text>
+            </View>
+            <Text style={styles.cardTitle}>Past Rides</Text>
+          </View>
         </View>
     </View>
   );

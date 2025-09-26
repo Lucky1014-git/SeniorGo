@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext';
 
@@ -20,6 +20,7 @@ export default function CurrentRides() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [rideStatusBar, setRideStatusBar] = useState<{ [key: string]: string }>({});
+  const [cancellingRides, setCancellingRides] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -67,13 +68,115 @@ export default function CurrentRides() {
     fetchStatus();
   }, [emailaddress]);
 
+  // Cancel ride function
+  const handleCancelRide = async (rideId: string) => {
+    if (!emailaddress) {
+      Alert.alert('Error', 'User not authenticated.');
+      return;
+    }
+
+    Alert.alert(
+      'Cancel Ride',
+      'Are you sure you want to cancel this ride?',
+      [
+        {
+          text: 'No',
+          style: 'cancel',
+        },
+        {
+          text: 'Yes, Cancel',
+          style: 'destructive',
+          onPress: async () => {
+            setCancellingRides(prev => ({ ...prev, [rideId]: true }));
+            
+            try {
+              const response = await fetch(API_ENDPOINTS.CANCEL_RIDE, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                  rideId,
+                  emailaddress 
+                }),
+              });
+
+              if (response.status === 200) {
+                const data = await response.json();
+                Alert.alert('Success', data.message || 'Ride cancelled successfully.', [
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      // Reload all records by calling fetchStatus again
+                      const fetchStatus = async () => {
+                        if (!emailaddress) return;
+                        setLoading(true);
+                        try {
+                          const response = await fetch(API_ENDPOINTS.CURRENT_RIDES, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ emailaddress }),
+                          });
+                          const data = await response.json();
+                          setRides(data.currentRides || []);
+                          setCurrentStatus(data.status);
+                          // For each ride, call updateStatusBar and update ride status if needed
+                          if (data.currentRides && Array.isArray(data.currentRides)) {
+                            const updatedStatuses: { [key: string]: string } = {};
+                            await Promise.all(
+                              data.currentRides.map(async (ride: any) => {
+                                try {
+                                  const statusRes = await fetch(API_ENDPOINTS.UPDATE_STATUS_BAR, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ rideId: ride.id }),
+                                  });
+                                  const statusData = await statusRes.json();
+                                  if (statusData.status) {
+                                    updatedStatuses[ride.id] = statusData.status;
+                                  }
+                                } catch (error) {
+                                  console.log('Error fetching status for ride', ride.id, ':', error);
+                                }
+                              })
+                            );
+                            setRideStatusBar(updatedStatuses);
+                          }
+                        } catch (error) {
+                          setRides([]);
+                          setCurrentStatus(null);
+                        }
+                        setLoading(false);
+                      };
+                      fetchStatus();
+                    }
+                  }
+                ]);
+              } else {
+                const data = await response.json();
+                throw new Error(data.message || 'Failed to cancel ride');
+              }
+            } catch (error) {
+              console.error('Error cancelling ride:', error);
+              Alert.alert('Error', 'Failed to cancel ride. Please try again.');
+            } finally {
+              setCancellingRides(prev => ({ ...prev, [rideId]: false }));
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backArrow} onPress={() => router.replace('/senior-dashboard')}>
         <Text style={{ fontSize: 28, color: '#2F5233' }}>{'\u2190'}</Text>
       </TouchableOpacity>
       <Text style={styles.header}>Current Rides</Text>
-      <View style={styles.rideList}>
+      <ScrollView 
+        style={styles.rideList}
+        contentContainerStyle={styles.rideListContent}
+        showsVerticalScrollIndicator={true}
+      >
         {loading ? (
           <Text style={{ color: '#888', alignSelf: 'center', marginTop: 32 }}>Loading...</Text>
         ) : rides.length === 0 ? (
@@ -163,13 +266,32 @@ export default function CurrentRides() {
                 <Text style={styles.value}>{ride.dropofflocation}</Text>
                 <Text style={styles.label}>Accepted By:</Text>
                 <Text style={styles.value}>{ride.acceptedby}</Text>
-                <Text style={styles.label}>Pickup Date/Time:</Text>
-                <Text style={styles.value}>{formatLocalDateTime(ride.pickupDateTime)}</Text>
+                <View style={styles.pickupSection}>
+                  <View style={styles.pickupInfo}>
+                    <Text style={styles.label}>Pickup Date/Time:</Text>
+                    <Text style={styles.value}>
+                      {formatLocalDateTime(ride.pickupDateTime)}
+                      {ride.day && ` - ${ride.day}`}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[
+                      styles.cancelButton,
+                      cancellingRides[ride.id] && styles.cancelButtonDisabled
+                    ]}
+                    onPress={() => handleCancelRide(ride.id)}
+                    disabled={cancellingRides[ride.id]}
+                  >
+                    <Text style={styles.cancelButtonText}>
+                      {cancellingRides[ride.id] ? 'Cancelling...' : 'Cancel Ride'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             );
           })
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -248,7 +370,11 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   rideList: {
+    flex: 1,
     marginTop: 24,
+  },
+  rideListContent: {
+    paddingBottom: 20,
   },
   rideCard: {
     backgroundColor: '#FFFDF6',
@@ -325,6 +451,38 @@ const styles = StyleSheet.create({
     color: '#2F5233',
     textAlign: 'center',
     marginBottom: 16,
+  },
+  pickupSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginTop: 8,
+  },
+  pickupInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  cancelButton: {
+    backgroundColor: '#FF6B6B',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 100,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  cancelButtonDisabled: {
+    backgroundColor: '#CCC',
+    opacity: 0.6,
+  },
+  cancelButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });
 
