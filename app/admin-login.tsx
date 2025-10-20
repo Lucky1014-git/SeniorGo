@@ -1,7 +1,9 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
+import { ButtonStyles, ContainerStyles, InputStyles, TextStyles } from '../styles/globalStyles';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -34,22 +36,22 @@ export default function AdminLogin() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={ContainerStyles.centerContainer}>
       {/* Back Arrow */}
-      <TouchableOpacity style={styles.backArrow} onPress={() => router.replace('/')}>
-        <Text style={styles.backArrowText}>←</Text>
+      <TouchableOpacity style={ButtonStyles.backArrowAlt} onPress={() => router.replace('/')}>
+        <Ionicons name="arrow-back-circle-outline" size={30} color="black" />
       </TouchableOpacity>
       
-      <Text style={styles.header}>Admin Login</Text>
+      <Text style={TextStyles.header}>Admin Login</Text>
       <TextInput
-        style={styles.input}
+        style={InputStyles.input}
         placeholder="User ID"
         autoCapitalize="none"
         value={userId}
         onChangeText={setUserId}
       />
       <TextInput
-        style={styles.input}
+        style={InputStyles.input}
         placeholder="Password"
         secureTextEntry
         autoCapitalize="none"
@@ -57,68 +59,18 @@ export default function AdminLogin() {
         onChangeText={setPassword}
       />
       <TouchableOpacity
-        style={styles.button}
+        style={ButtonStyles.primaryButton}
         onPress={handleAdminLogin}
         disabled={submitting}
         activeOpacity={0.85}
       >
-        <Text style={styles.buttonText}>{submitting ? 'Submitting...' : 'Submit'}</Text>
+        <Text style={ButtonStyles.primaryButtonText}>{submitting ? 'Submitting...' : 'Submit'}</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
+// Any remaining page-specific styles that aren't in global styles
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#E6F4EA',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  backArrow: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    padding: 8,
-    zIndex: 1,
-  },
-  backArrowText: {
-    fontSize: 28,
-    color: '#2F5233',
-  },
-  header: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2F5233',
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  input: {
-    width: '100%',
-    borderWidth: 2,
-    borderColor: '#2F5233',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 18,
-    backgroundColor: '#FFFDF6',
-    marginBottom: 18,
-    color: '#2F5233',
-  },
-  button: {
-    width: 180,
-    backgroundColor: '#2F5233',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 10,
-    elevation: 2,
-    alignSelf: 'center',
-  },
-  buttonText: {
-    color: '#FFFDF6',
-    fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
+  // Add any unique styles for this page here if needed
 });

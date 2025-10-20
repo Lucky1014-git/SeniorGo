@@ -1,18 +1,24 @@
-import { MaterialIcons } from '@expo/vector-icons'; // Add this import
+import Ionicons from '@expo/vector-icons/Ionicons';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+
+import * as FileSystem from 'expo-file-system';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
+import { VolunteerSignUpStyles } from '../styles/globalStyles';
+;
 
 export default function VolunteerSignUp() {
   const router = useRouter();
@@ -36,8 +42,87 @@ export default function VolunteerSignUp() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [groupCode, setGroupCode] = useState('');
+  const [image, setImage] = useState<string | null>(null);
+
 
   const handleChange = (key: string, value: any) => setForm({ ...form, [key]: value });
+
+  const handleDateChange = (value: string) => {
+    // Remove all non-numeric characters
+    const cleaned = value.replace(/\D/g, '');
+    
+    let formatted = cleaned;
+    
+    // Add slashes as user types
+    if (cleaned.length >= 2) {
+      formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
+    }
+    if (cleaned.length >= 4) {
+      formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2, 4) + '/' + cleaned.slice(4, 8);
+    }
+    
+    // Limit to 10 characters (MM/DD/YYYY)
+    if (formatted.length <= 10) {
+      setForm({ ...form, dob: formatted });
+    }
+  };
+
+
+
+  const pickImage = async () => {
+    Alert.alert(
+      'Select Photo',
+      'Choose how you want to add your photo:',
+      [
+        {
+          text: 'Camera',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Denied', 'Camera permission is required to take photos.');
+              return;
+            }
+            const result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+            });
+            if (!result.canceled) {
+              setImage(result.assets[0].uri);
+            }
+          }
+        },
+        {
+          text: 'Photo Library',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Denied', 'Photo library permission is required to select photos.');
+              return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+            });
+            if (!result.canceled) {
+              setImage(result.assets[0].uri);
+            }
+          }
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]
+    );
+  };
+
+  const removeImage = () => {
+    setImage(null);
+  };
 
   const handleSubmit = async () => {
     // Email validation
@@ -91,10 +176,28 @@ export default function VolunteerSignUp() {
     setSubmitting(true);
     try {
       console.log('Submitting form:', JSON.stringify(form));
+      const formData: any = { ...form, password, groupCode };
+      
+      // Convert image to Base64 if present
+      if (image) {
+        try {
+          const base64 = await FileSystem.readAsStringAsync(image, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          formData.profilePhoto = base64;
+          console.log('Image converted to Base64, length:', base64.length);
+        } catch (imageError) {
+          console.error('Error converting image to Base64:', imageError);
+          Alert.alert('Image Error', 'Failed to process the image. Please try again.');
+          setSubmitting(false);
+          return;
+        }
+      }
+      
       const response = await fetch(API_ENDPOINTS.SIGNUP_VOLUNTEER, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, password, groupCode }),
+        body: JSON.stringify(formData),
       });
       const data = await response.json();
       if (response.ok) {
@@ -115,14 +218,18 @@ export default function VolunteerSignUp() {
   };
 
   const YesNo = ({ value, onChange }: { value: string, onChange: (v: string) => void }) => (
-    <View style={styles.radioRow}>
-      <TouchableOpacity onPress={() => onChange('yes')} style={styles.radioOption}>
-        <Text style={styles.radioIcon}>{value === 'yes' ? '🔘' : '⭕'}</Text>
-        <Text style={styles.radioLabel}>Yes</Text>
+    <View style={VolunteerSignUpStyles.radioRow}>
+      <TouchableOpacity onPress={() => onChange('yes')} style={VolunteerSignUpStyles.radioOption}>
+        <View style={[VolunteerSignUpStyles.radioButton, value === 'yes' && VolunteerSignUpStyles.radioButtonSelected]}>
+          {value === 'yes' && <View style={VolunteerSignUpStyles.radioButtonInner} />}
+        </View>
+        <Text style={VolunteerSignUpStyles.radioLabel}>Yes</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => onChange('no')} style={styles.radioOption}>
-        <Text style={styles.radioIcon}>{value === 'no' ? '🔘' : '⭕'}</Text>
-        <Text style={styles.radioLabel}>No</Text>
+      <TouchableOpacity onPress={() => onChange('no')} style={VolunteerSignUpStyles.radioOption}>
+        <View style={[VolunteerSignUpStyles.radioButton, value === 'no' && VolunteerSignUpStyles.radioButtonSelected]}>
+          {value === 'no' && <View style={VolunteerSignUpStyles.radioButtonInner} />}
+        </View>
+        <Text style={VolunteerSignUpStyles.radioLabel}>No</Text>
       </TouchableOpacity>
     </View>
   );
@@ -134,28 +241,36 @@ export default function VolunteerSignUp() {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={VolunteerSignUpStyles.volunteerContainer} keyboardShouldPersistTaps="handled">
         {/* Signout Icon Button */}
-        <TouchableOpacity style={styles.signoutButton} onPress={handleSignOut}>
-          <MaterialIcons name="logout" size={22} color="#2F5233" />
+
+
+        <TouchableOpacity style={VolunteerSignUpStyles.volunteerBackArrow} onPress={() => router.back()}>
+          <Ionicons name="arrow-back-circle-outline" size={30} color="black" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.backArrow} onPress={() => router.back()}>
-          <Text style={styles.backArrowText}>{'←'}</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.header}>Volunteer Sign Up</Text>
+        <Text style={VolunteerSignUpStyles.volunteerHeader}>Volunteer Sign Up</Text>
 
         {/* Personal Info */}
-        <TextInput style={styles.input} placeholder="Full Name" value={form.fullName} onChangeText={t => handleChange('fullName', t)} />
-        <TextInput style={styles.input} placeholder="Date of Birth (MM/DD/YYYY)" value={form.dob} onChangeText={t => handleChange('dob', t)} />
-        <TextInput style={styles.input} placeholder="Email Address" value={form.email} onChangeText={t => handleChange('email', t)} keyboardType="email-address" autoCapitalize="none" />
-        <TextInput style={styles.input} placeholder="Phone Number" value={form.phone} onChangeText={t => handleChange('phone', t)} keyboardType="phone-pad" />
-        <TextInput style={styles.input} placeholder="Address or City/Zip" value={form.address} onChangeText={t => handleChange('address', t)} />
+        <TextInput style={VolunteerSignUpStyles.volunteerInput} placeholder="Full Name" value={form.fullName} onChangeText={t => handleChange('fullName', t)} />
+        
+        {/* Date of Birth Input */}
+        <TextInput 
+          style={VolunteerSignUpStyles.volunteerInput} 
+          placeholder="Date of Birth (MM/DD/YYYY)" 
+          value={form.dob} 
+          onChangeText={handleDateChange}
+          keyboardType="numeric"
+          maxLength={10}
+        />
+        
+        <TextInput style={VolunteerSignUpStyles.volunteerInput} placeholder="Email Address" value={form.email} onChangeText={t => handleChange('email', t)} keyboardType="email-address" autoCapitalize="none" />
+        <TextInput style={VolunteerSignUpStyles.volunteerInput} placeholder="Phone Number" value={form.phone} onChangeText={t => handleChange('phone', t)} keyboardType="phone-pad" />
+        <TextInput style={VolunteerSignUpStyles.volunteerInput} placeholder="Address or City/Zip" value={form.address} onChangeText={t => handleChange('address', t)} />
 
         {/* Password fields */}
         <TextInput
-          style={styles.input}
+          style={VolunteerSignUpStyles.volunteerInput}
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
@@ -163,7 +278,7 @@ export default function VolunteerSignUp() {
           autoCapitalize="none"
         />
         <TextInput
-          style={styles.input}
+          style={VolunteerSignUpStyles.volunteerInput}
           placeholder="Confirm Password"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
@@ -172,134 +287,58 @@ export default function VolunteerSignUp() {
         />
 
         {/* Driving & Vehicle */}
-        <Text style={styles.section}>Driver & Vehicle Info</Text>
-        <Text style={styles.question}>Do you have a valid driver’s license?</Text>
+        <Text style={VolunteerSignUpStyles.section}>Driver & Vehicle Info</Text>
+        <Text style={VolunteerSignUpStyles.question}>Do you have a valid driver's license?</Text>
         <YesNo value={form.hasLicense} onChange={v => handleChange('hasLicense', v)} />
-        <TextInput style={styles.input} placeholder="License Number (optional)" value={form.licenseNumber} onChangeText={t => handleChange('licenseNumber', t)} />
-        <Text style={styles.question}>Do you have your own vehicle?</Text>
+        <TextInput style={VolunteerSignUpStyles.volunteerInput} placeholder="License Number (optional)" value={form.licenseNumber} onChangeText={t => handleChange('licenseNumber', t)} />
+        <Text style={VolunteerSignUpStyles.question}>Do you have your own vehicle?</Text>
         <YesNo value={form.hasVehicle} onChange={v => handleChange('hasVehicle', v)} />
-        <TextInput style={styles.input} placeholder="Vehicle type & capacity (e.g., SUV, wheelchair)" value={form.vehicleType} onChangeText={t => handleChange('vehicleType', t)} />
-        <TextInput style={styles.input} placeholder="Proof of insurance or registration" value={form.proof} onChangeText={t => handleChange('proof', t)} />
+        <TextInput style={VolunteerSignUpStyles.volunteerInput} placeholder="Vehicle type & capacity (e.g., SUV, wheelchair)" value={form.vehicleType} onChangeText={t => handleChange('vehicleType', t)} />
+        <TextInput style={VolunteerSignUpStyles.volunteerInput} placeholder="Proof of insurance or registration" value={form.proof} onChangeText={t => handleChange('proof', t)} />
 
         {/* Experience */}
-        <Text style={styles.section}>Experience & Qualifications</Text>
-        <Text style={styles.question}>Willing to undergo background check?</Text>
+        <Text style={VolunteerSignUpStyles.section}>Experience & Qualifications</Text>
+        <Text style={VolunteerSignUpStyles.question}>Willing to undergo background check?</Text>
         <YesNo value={form.backgroundCheck} onChange={v => handleChange('backgroundCheck', v)} />
-        <Text style={styles.question}>Volunteered with seniors before?</Text>
+        <Text style={VolunteerSignUpStyles.question}>Volunteered with seniors before?</Text>
         <YesNo value={form.volunteeredBefore} onChange={v => handleChange('volunteeredBefore', v)} />
-        <Text style={styles.question}>First-aid/CPR trained?</Text>
+        <Text style={VolunteerSignUpStyles.question}>First-aid/CPR trained?</Text>
         <YesNo value={form.firstAid} onChange={v => handleChange('firstAid', v)} />
-        <Text style={styles.question}>Comfortable helping with mobility?</Text>
+        <Text style={VolunteerSignUpStyles.question}>Comfortable helping with mobility?</Text>
         <YesNo value={form.mobilityHelp} onChange={v => handleChange('mobilityHelp', v)} />
 
         {/* Group Code */}
-        <TextInput style={styles.input} placeholder="Group Code" value={groupCode} onChangeText={setGroupCode} />
+        <TextInput style={VolunteerSignUpStyles.volunteerInput} placeholder="Group Code" value={groupCode} onChangeText={setGroupCode} />
 
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={submitting}>
-          <Text style={styles.submitButtonText}>{submitting ? 'Submitting...' : 'Submit'}</Text>
+        {/* Photo Capture */}
+        <View style={VolunteerSignUpStyles.photoContainer}>
+          <TouchableOpacity style={VolunteerSignUpStyles.photoButton} onPress={pickImage}>
+            <Ionicons name="camera" size={20} color={VolunteerSignUpStyles.photoButtonText.color} />
+            <Text style={VolunteerSignUpStyles.photoButtonText}>
+              {image ? 'Change Photo' : 'Add Photo'}
+            </Text>
+          </TouchableOpacity>
+          
+          {image && (
+            <View>
+              <Image source={{ uri: image }} style={VolunteerSignUpStyles.smallPhotoPreview} />
+              <TouchableOpacity style={VolunteerSignUpStyles.removePhotoButton} onPress={removeImage}>
+                <Text style={VolunteerSignUpStyles.removePhotoText}>Remove Photo</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        <TouchableOpacity style={VolunteerSignUpStyles.volunteerSubmitButton} onPress={handleSubmit} disabled={submitting}>
+          <Text style={VolunteerSignUpStyles.volunteerSubmitButtonText}>{submitting ? 'Submitting...' : 'Submit'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
+// Any remaining page-specific styles that aren't in global styles
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: '#DFF5E3',
-    paddingBottom: 60,
-  },
-  header: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#2F5233',
-    marginBottom: 20,
-    marginTop: 60,
-    alignSelf: 'center',
-  },
-  input: {
-    width: '100%',
-    padding: 10,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#2F5233',
-    borderRadius: 8,
-    backgroundColor: '#FFFDF6',
-    fontSize: 14,
-  },
-  section: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 24,
-    marginBottom: 8,
-    color: '#2F5233',
-    alignSelf: 'flex-start',
-  },
-  question: {
-    fontWeight: '500',
-    color: '#2F5233',
-    marginTop: 8,
-    marginBottom: 4,
-    alignSelf: 'flex-start',
-  },
-  radioRow: {
-    flexDirection: 'row',
-    marginBottom: 10,
-    alignSelf: 'flex-start',
-  },
-  radioOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 20,
-  },
-  radioIcon: {
-    fontSize: 22,
-    marginRight: 4,
-  },
-  radioLabel: {
-    fontSize: 16,
-    color: '#2F5233',
-  },
-  submitButton: {
-    backgroundColor: '#2F5233',
-    paddingVertical: 14,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    marginTop: 20,
-    alignSelf: 'center',
-  },
-  submitButtonText: {
-    color: '#FFFDF6',
-    fontWeight: '600',
-    fontSize: 18,
-  },
-  backArrow: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    padding: 8,
-    zIndex: 10,
-  },
-  backArrowText: {
-    fontSize: 32,
-    color: '#2F5233',
-  },
-  signoutButton: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    zIndex: 10,
-    padding: 6,
-    backgroundColor: '#FFFDF6',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#2F5233',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  signoutIcon: {
-    fontSize: 22,
-    color: '#2F5233',
-  },
+  // Add any unique styles for this page here if needed
 });
 

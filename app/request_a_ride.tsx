@@ -1,13 +1,15 @@
-import { MaterialIcons } from '@expo/vector-icons'; // Add this import
+import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import type { LatLng, Region } from 'react-native-maps';
 import MapView, { Marker } from 'react-native-maps';
 import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext'; // import useUser
+import { ButtonStyles, Colors, HeaderStyles, RecurringRideStyles, RideRequestStyles, SeniorDashboardStyles } from '../styles/globalStyles';
 
 
 // Helper to format date in 12-hour AM/PM format
@@ -47,9 +49,11 @@ export default function RequestARide() {
   const { getUserInfo } = useUser(); // get getUserInfo from context
   const userInfo = getUserInfo();
   const userEmailAddress = userInfo?.emailaddress || '';
+  const groupName = userInfo?.groupname || 'No Group Assigned';
 
   const [currentLocation, setCurrentLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
+  const [specialNote, setSpecialNote] = useState('');
   const [region, setRegion] = useState<Region | null>(null);
   const [marker, setMarker] = useState<LatLng | null>(null);
   const [pickupType, setPickupType] = useState<'now' | 'later' | 'at'>('now');
@@ -147,21 +151,40 @@ export default function RequestARide() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Signout Icon Button */}
-      <TouchableOpacity style={styles.signoutButton} onPress={handleSignOut}>
-        <MaterialIcons name="logout" size={22} color="#2F5233" />
-      </TouchableOpacity>
-      {/* Back Arrow to Dashboard */}
-      <TouchableOpacity style={styles.backArrow} onPress={() => router.replace('/senior-dashboard')}>
-        <Text style={styles.backArrowText}>←</Text>
-      </TouchableOpacity>
-      <Text style={styles.title}>Request a Ride</Text>
+    
+    <ScrollView style={RecurringRideStyles.recurringContainer} contentContainerStyle={RecurringRideStyles.scrollContent}>
+
+      {/* Back Button */}
+
+      <View style={HeaderStyles.headerRow} >
+        {/* Back Button on the left */}
+        <TouchableOpacity
+          style={HeaderStyles.headerButton}
+          onPress={() => router.replace('/senior-dashboard')}
+        >
+          <AntDesign name="home" size={25} color={Colors.primary} />
+        </TouchableOpacity>
+
+        {/* Logout Button on the right */}
+        <TouchableOpacity
+          style={HeaderStyles.headerButton}
+          onPress={handleSignOut}
+        >
+          <MaterialIcons name="logout" size={25} color={Colors.primary} />
+        </TouchableOpacity>
+      </View>
+
       
+
+        <View style={SeniorDashboardStyles.navBar}>
+          <Text style={SeniorDashboardStyles.navBarText}>Request a Ride</Text>
+          <Text style={SeniorDashboardStyles.groupName}>({groupName})</Text>
+        </View>
+ 
       {/* Current Location Container */}
-      <View style={styles.inputContainer}>
+      <View style={RideRequestStyles.inputContainer}>
         <TextInput
-          style={styles.input}
+          style={RideRequestStyles.rideInput}
           placeholder="Current Location"
           value={addressQuery}
           onChangeText={text => {
@@ -179,7 +202,7 @@ export default function RequestARide() {
             keyExtractor={item => item.osm_id?.toString() || item.display_name}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={styles.suggestionItem}
+                style={RideRequestStyles.suggestionItem}
                 onPress={() => {
                   setAddressQuery(item.display_name);
                   setAddressSuggestions([]);
@@ -189,15 +212,15 @@ export default function RequestARide() {
                 <Text>{item.display_name}</Text>
               </TouchableOpacity>
             )}
-            style={styles.suggestionList}
+            style={RideRequestStyles.suggestionList}
           />
         )}
       </View>
       
       {/* Dropoff Location Container */}
-      <View style={styles.inputContainer}>
+      <View style={RideRequestStyles.inputContainer}>
         <TextInput
-          style={styles.input}
+          style={RideRequestStyles.rideInput}
           placeholder="Dropoff Location"
           value={dropoffQuery}
           onChangeText={text => {
@@ -214,7 +237,7 @@ export default function RequestARide() {
             keyExtractor={item => item.osm_id?.toString() || item.display_name}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={styles.suggestionItem}
+                style={RideRequestStyles.suggestionItem}
                 onPress={() => {
                   setDropoffQuery(item.display_name);
                   setDropoffSuggestions([]);
@@ -224,16 +247,30 @@ export default function RequestARide() {
                 <Text>{item.display_name}</Text>
               </TouchableOpacity>
             )}
-            style={styles.suggestionList}
+            style={RideRequestStyles.suggestionList}
           />
         )}
       </View>
+
+      {/* Special Note Container */}
+      <View style={RideRequestStyles.inputContainer}>
+        <TextInput
+          style={RideRequestStyles.rideInput}
+          placeholder="Special Note (Optional)"
+          value={specialNote}
+          onChangeText={setSpecialNote}
+          multiline={true}
+          numberOfLines={3}
+          textAlignVertical="top"
+        />
+      </View>
+
       {/* Pick Up Date button */}
       <TouchableOpacity
-        style={styles.timePickerButton}
+        style={RideRequestStyles.timePickerButton}
         onPress={() => setShowDatePicker(true)}
       >
-        <Text style={styles.timePickerButtonText}>
+        <Text style={RideRequestStyles.timePickerButtonText}>
           Date{pickupTime && !showDatePicker ? ` (${formatDateDisplay(pickupTime)})` : ''}
         </Text>
       </TouchableOpacity>
@@ -256,10 +293,10 @@ export default function RequestARide() {
       )}
       {/* Pick Up Time button */}
       <TouchableOpacity
-        style={styles.timePickerButton}
+        style={RideRequestStyles.timePickerButton}
         onPress={() => setShowTimePicker(true)}
       >
-        <Text style={styles.timePickerButtonText}>
+        <Text style={RideRequestStyles.timePickerButtonText}>
           {(() => {
             if (pickupTime && !showTimePicker) {
               const formatted = format12Hour(pickupTime).split(' ');
@@ -291,7 +328,7 @@ export default function RequestARide() {
       )}
       {region && (
         <MapView
-          style={styles.map}
+          style={RideRequestStyles.map}
           region={region}
           showsUserLocation={true}
         >
@@ -303,7 +340,7 @@ export default function RequestARide() {
 
       {/* Submit Button */}
       <TouchableOpacity
-        style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+        style={[ButtonStyles.submitButton, isSubmitting && RideRequestStyles.submitButtonDisabled]}
         onPress={async () => {
           if (isSubmitting) return; // Prevent double submission
           
@@ -330,6 +367,7 @@ export default function RequestARide() {
               body: JSON.stringify({
                 currentLocation,
                 dropoffLocation,
+                specialNote,
                 pickupDateTime: pickupTime.toISOString(),
                 userEmailAddress
               }),
@@ -364,155 +402,17 @@ export default function RequestARide() {
         }}
         disabled={isSubmitting}
       >
-        <Text style={styles.submitButtonText}>
+        <Text style={ButtonStyles.submitButtonText}>
           {isSubmitting ? 'Creating Request...' : 'Submit'}
         </Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
+// Any remaining page-specific styles that aren't in global styles
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#DFF5E3',
-    alignItems: 'center',
-    paddingTop: 60,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#2F5233',
-    marginBottom: 20,
-  },
-  inputContainer: {
-    width: '90%',
-    position: 'relative',
-    marginBottom: 12,
-    zIndex: 1,
-  },
-  input: {
-    width: '100%',
-    padding: 10,
-    marginBottom: 0,
-    borderWidth: 1,
-    borderColor: '#2F5233',
-    borderRadius: 8,
-    backgroundColor: '#FFFDF6',
-    fontSize: 16,
-    minHeight: 72,
-  },
-  map: {
-    width: '90%',
-    height: 300,
-    borderRadius: 12,
-    marginTop: 10,
-  },
-  pickupOptions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 16,
-    marginTop: 8,
-    gap: 10,
-  },
-  pickupButton: {
-    backgroundColor: '#FFFDF6',
-    borderColor: '#2F5233',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    marginHorizontal: 5,
-  },
-  pickupButtonSelected: {
-    backgroundColor: '#2F5233',
-  },
-  pickupButtonText: {
-    color: '#2F5233',
-    fontWeight: '600',
-  },
-  pickupButtonTextSelected: {
-    color: '#FFFDF6',
-  },
-  timePickerButton: {
-    backgroundColor: '#FFFDF6',
-    borderColor: '#2F5233',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 7, // reduced from 10
-    paddingHorizontal: 14, // reduced from 18
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  timePickerButtonText: {
-    color: '#2F5233',
-    fontWeight: '600',
-    fontSize: 15, // reduced from 16
-  },
-  suggestionList: {
-    width: '100%',
-    maxHeight: 120,
-    backgroundColor: '#FFFDF6',
-    borderColor: '#2F5233',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginTop: 2,
-    zIndex: 1000,
-    elevation: 5,
-    position: 'absolute',
-    bottom: 72,
-  },
-  suggestionItem: {
-    padding: 10,
-    borderBottomColor: '#eee',
-    borderBottomWidth: 1,
-  },
-  backArrow: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    padding: 8,
-    zIndex: 10,
-  },
-  backArrowText: {
-    fontSize: 32,
-    color: '#2F5233',
-  },
-  submitButton: {
-    backgroundColor: '#2F5233',
-    borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    alignItems: 'center',
-    marginTop: 18,
-    marginBottom: 24,
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#9CA3AF',
-    opacity: 0.7,
-  },
-  submitButtonText: {
-    color: '#FFFDF6',
-    fontWeight: '700',
-    fontSize: 18,
-  },
-  signoutButton: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    zIndex: 10,
-    padding: 6,
-    backgroundColor: '#FFFDF6',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#2F5233',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  signoutIcon: {
-    fontSize: 22,
-    color: '#2F5233',
-  },
+  // Add any unique styles for this page here if needed
 });
 
 

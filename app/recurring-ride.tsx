@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
@@ -6,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext';
+import { Colors, HeaderStyles, RecurringRideStyles, SeniorDashboardStyles } from '../styles/globalStyles';
 
 // Helper to format date in "10th Aug 1997" format
 function formatDateDisplay(date: Date) {
@@ -43,6 +45,7 @@ export default function RecurringRide() {
   const router = useRouter();
   const { getUserInfo } = useUser();
   const userInfo = getUserInfo();
+  const groupName = userInfo?.groupname || 'No Group Assigned';
   const userEmailAddress = userInfo?.emailaddress || '';
 
   const [currentLocation, setCurrentLocation] = useState('');
@@ -181,23 +184,38 @@ export default function RecurringRide() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <ScrollView style={RecurringRideStyles.recurringContainer} contentContainerStyle={RecurringRideStyles.scrollContent}>
       {/* Signout Icon Button */}
-      <TouchableOpacity style={styles.signoutButton} onPress={handleSignOut}>
-        <MaterialIcons name="logout" size={22} color="#2F5233" />
+
+      <View style={HeaderStyles.headerRow}>
+      {/* Back Button on the left */}
+      <TouchableOpacity
+        style={HeaderStyles.headerButton}
+        onPress={() => router.replace('/senior-dashboard')}
+      >
+        <AntDesign name="home" size={25} color={Colors.primary} />
       </TouchableOpacity>
-      
-      {/* Back Arrow to Dashboard */}
-      <TouchableOpacity style={styles.backArrow} onPress={() => router.replace('/senior-dashboard')}>
-        <Text style={styles.backArrowText}>←</Text>
+
+      {/* Logout Button on the right */}
+      <TouchableOpacity
+        style={HeaderStyles.headerButton}
+        onPress={handleSignOut}
+      >   
+      <MaterialIcons name="logout" size={25} color={Colors.primary} />
       </TouchableOpacity>
+      </View>
+
+      <View style={SeniorDashboardStyles.navBar}>
+        <Text style={SeniorDashboardStyles.navBarText}>Request Recurring Ride</Text>
+        <Text style={SeniorDashboardStyles.groupName}>({groupName})</Text>
+      </View>
+
       
-      <Text style={styles.title}>Request Recurring Ride</Text>
       
       {/* Current Location Container */}
-      <View style={styles.inputContainer}>
+      <View style={RecurringRideStyles.recurringInputContainer}>
         <TextInput
-          style={styles.input}
+          style={RecurringRideStyles.recurringInput}
           placeholder="Current Location"
           value={addressQuery}
           onChangeText={text => {
@@ -212,14 +230,14 @@ export default function RecurringRide() {
         />
         {addressSuggestions.length > 0 && (
           <ScrollView
-            style={styles.suggestionList}
+            style={RecurringRideStyles.recurringSuggestionList}
             nestedScrollEnabled={true}
             keyboardShouldPersistTaps="handled"
           >
             {addressSuggestions.map((item) => (
               <TouchableOpacity
                 key={item.osm_id?.toString() || item.display_name}
-                style={styles.suggestionItem}
+                style={RecurringRideStyles.recurringSuggestionItem}
                 onPress={() => {
                   setAddressQuery(item.display_name);
                   setAddressSuggestions([]);
@@ -234,9 +252,9 @@ export default function RecurringRide() {
       </View>
       
       {/* Dropoff Location Container */}
-      <View style={styles.inputContainer}>
+      <View style={RecurringRideStyles.recurringInputContainer}>
         <TextInput
-          style={styles.input}
+          style={RecurringRideStyles.recurringInput}
           placeholder="Dropoff Location"
           value={dropoffQuery}
           onChangeText={text => {
@@ -250,14 +268,14 @@ export default function RecurringRide() {
         />
         {dropoffSuggestions.length > 0 && (
           <ScrollView
-            style={styles.suggestionList}
+            style={RecurringRideStyles.recurringSuggestionList}
             nestedScrollEnabled={true}
             keyboardShouldPersistTaps="handled"
           >
             {dropoffSuggestions.map((item) => (
               <TouchableOpacity
                 key={item.osm_id?.toString() || item.display_name}
-                style={styles.suggestionItem}
+                style={RecurringRideStyles.recurringSuggestionItem}
                 onPress={() => {
                   setDropoffQuery(item.display_name);
                   setDropoffSuggestions([]);
@@ -273,10 +291,10 @@ export default function RecurringRide() {
 
       {/* Start Date */}
       <TouchableOpacity
-        style={styles.datePickerButton}
+        style={RecurringRideStyles.datePickerButton}
         onPress={() => setShowStartDatePicker(true)}
       >
-        <Text style={styles.datePickerButtonText}>
+        <Text style={RecurringRideStyles.datePickerButtonText}>
           Start Date ({formatDateDisplay(startDate)})
         </Text>
       </TouchableOpacity>
@@ -302,28 +320,28 @@ export default function RecurringRide() {
       )}
 
       {/* Weekly Schedule */}
-      <Text style={styles.sectionTitle}>Weekly Schedule</Text>
+      <Text style={RecurringRideStyles.sectionTitle}>Weekly Schedule</Text>
       {days.map((day) => (
-        <View key={day} style={styles.dayRow}>
+        <View key={day} style={RecurringRideStyles.dayRow}>
           <TouchableOpacity
-            style={[styles.dayToggle, weeklySchedule[day].enabled && styles.dayToggleActive]}
+            style={[RecurringRideStyles.dayToggle, weeklySchedule[day].enabled && RecurringRideStyles.dayToggleActive]}
             onPress={() => toggleDay(day)}
           >
-            <Text style={[styles.dayToggleText, weeklySchedule[day].enabled && styles.dayToggleTextActive]}>
+            <Text style={[RecurringRideStyles.dayToggleText, weeklySchedule[day].enabled && RecurringRideStyles.dayToggleTextActive]}>
               {weeklySchedule[day].enabled ? '✓' : '○'}
             </Text>
           </TouchableOpacity>
           
-          <Text style={[styles.dayName, weeklySchedule[day].enabled && styles.dayNameActive]}>
+          <Text style={[RecurringRideStyles.dayName, weeklySchedule[day].enabled && RecurringRideStyles.dayNameActive]}>
             {day}
           </Text>
           
           <TouchableOpacity
-            style={[styles.timeButton, !weeklySchedule[day].enabled && styles.timeButtonDisabled]}
+            style={[RecurringRideStyles.timeButton, !weeklySchedule[day].enabled && RecurringRideStyles.timeButtonDisabled]}
             onPress={() => weeklySchedule[day].enabled && openTimePicker(day)}
             disabled={!weeklySchedule[day].enabled}
           >
-            <Text style={[styles.timeButtonText, !weeklySchedule[day].enabled && styles.timeButtonTextDisabled]}>
+            <Text style={[RecurringRideStyles.timeButtonText, !weeklySchedule[day].enabled && RecurringRideStyles.timeButtonTextDisabled]}>
               {formatTimeDisplay(weeklySchedule[day].time)}
             </Text>
           </TouchableOpacity>
@@ -341,10 +359,10 @@ export default function RecurringRide() {
 
       {/* End Date */}
       <TouchableOpacity
-        style={styles.datePickerButton}
+        style={RecurringRideStyles.datePickerButton}
         onPress={() => setShowEndDatePicker(true)}
       >
-        <Text style={styles.datePickerButtonText}>
+        <Text style={RecurringRideStyles.datePickerButtonText}>
           End Date ({formatDateDisplay(endDate)})
         </Text>
       </TouchableOpacity>
@@ -374,7 +392,7 @@ export default function RecurringRide() {
 
       {/* Submit Button */}
       <TouchableOpacity
-        style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+        style={[RecurringRideStyles.recurringSubmitButton, isSubmitting && RecurringRideStyles.recurringSubmitButtonDisabled]}
         onPress={async () => {
           if (isSubmitting) return;
           
@@ -466,7 +484,7 @@ export default function RecurringRide() {
         }}
         disabled={isSubmitting}
       >
-        <Text style={styles.submitButtonText}>
+        <Text style={RecurringRideStyles.recurringSubmitButtonText}>
           {isSubmitting ? 'Creating Request...' : 'Submit Recurring Ride'}
         </Text>
       </TouchableOpacity>
@@ -474,181 +492,7 @@ export default function RecurringRide() {
   );
 }
 
+// Any remaining page-specific styles that aren't in global styles
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#DFF5E3',
-  },
-  scrollContent: {
-    alignItems: 'center',
-    paddingTop: 60,
-    paddingBottom: 40,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#2F5233',
-    marginBottom: 20,
-  },
-  inputContainer: {
-    width: '90%',
-    position: 'relative',
-    marginBottom: 12,
-    zIndex: 1,
-  },
-  input: {
-    width: '100%',
-    padding: 10,
-    marginBottom: 0,
-    borderWidth: 1,
-    borderColor: '#2F5233',
-    borderRadius: 8,
-    backgroundColor: '#FFFDF6',
-    fontSize: 16,
-    minHeight: 72,
-  },
-  suggestionList: {
-    width: '100%',
-    maxHeight: 120,
-    backgroundColor: '#FFFDF6',
-    borderColor: '#2F5233',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginTop: 2,
-    zIndex: 1000,
-    elevation: 5,
-    position: 'absolute',
-    bottom: 72,
-  },
-  suggestionItem: {
-    padding: 10,
-    borderBottomColor: '#eee',
-    borderBottomWidth: 1,
-  },
-  datePickerButton: {
-    backgroundColor: '#FFFDF6',
-    borderColor: '#2F5233',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    marginBottom: 20,
-    width: '90%',
-  },
-  datePickerButtonText: {
-    color: '#2F5233',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#2F5233',
-    marginBottom: 15,
-    marginTop: 10,
-  },
-  dayRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '90%',
-    marginBottom: 12,
-    paddingVertical: 8,
-  },
-  dayToggle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 2,
-    borderColor: '#2F5233',
-    backgroundColor: '#FFFDF6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 15,
-  },
-  dayToggleActive: {
-    backgroundColor: '#2F5233',
-  },
-  dayToggleText: {
-    color: '#2F5233',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  dayToggleTextActive: {
-    color: '#FFFDF6',
-  },
-  dayName: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
-  },
-  dayNameActive: {
-    color: '#2F5233',
-  },
-  timeButton: {
-    backgroundColor: '#FFFDF6',
-    borderColor: '#2F5233',
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  timeButtonDisabled: {
-    backgroundColor: '#F5F5F5',
-    borderColor: '#CCC',
-  },
-  timeButtonText: {
-    color: '#2F5233',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  timeButtonTextDisabled: {
-    color: '#999',
-  },
-  backArrow: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    padding: 8,
-    zIndex: 10,
-  },
-  backArrowText: {
-    fontSize: 32,
-    color: '#2F5233',
-  },
-  submitButton: {
-    backgroundColor: '#2F5233',
-    borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 24,
-    width: '90%',
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#9CA3AF',
-    opacity: 0.7,
-  },
-  submitButtonText: {
-    color: '#FFFDF6',
-    fontWeight: '700',
-    fontSize: 18,
-  },
-  signoutButton: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    zIndex: 10,
-    padding: 6,
-    backgroundColor: '#FFFDF6',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#2F5233',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  // Add any unique styles for this page here if needed
 });

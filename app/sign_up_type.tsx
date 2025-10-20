@@ -1,7 +1,9 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ButtonStyles, ContainerStyles, TextStyles } from '../styles/globalStyles';
+import { ButtonStyles, ContainerStyles, SignUpTypeStyles, TextStyles } from '../styles/globalStyles';
+
 
 export default function SignUpTypeScreen() {
   const router = useRouter();
@@ -19,39 +21,36 @@ export default function SignUpTypeScreen() {
 
   return (
     <View style={ContainerStyles.signupContainer}>
+
+
+
       <TouchableOpacity style={ButtonStyles.backArrow} onPress={() => router.replace('/')}>
-        <Text style={{ fontSize: 28, color: '#2F5233' }}>{'\u2190'}</Text>
+        <Ionicons name="arrow-back-circle-outline" size={30} color="black" />
+        
       </TouchableOpacity>
       <Text style={TextStyles.headerLarge}>Create Account</Text>
       
       <TouchableOpacity 
         style={[
-          ButtonStyles.primaryButton, 
-          { marginBottom: 20, width: '80%' },
-          selected === 'senior' && { backgroundColor: '#1B7F5B' }
+          SignUpTypeStyles.signUpButton,
+          selected === 'senior' && SignUpTypeStyles.signUpButtonSelected
         ]} 
         onPress={handleSeniorPress}
       >
-        <Text style={[
-          ButtonStyles.primaryButtonText,
-          { textAlign: 'center' }
-        ]}>
+        <Text style={SignUpTypeStyles.signUpButtonText}>
           I'm a Senior who needs a ride
         </Text>
       </TouchableOpacity>
       
       <TouchableOpacity 
         style={[
-          ButtonStyles.primaryButton, 
-          { width: '80%' },
-          selected === 'volunteer' && { backgroundColor: '#1B7F5B' }
+          SignUpTypeStyles.signUpButton,
+          { marginBottom: 0 },
+          selected === 'volunteer' && SignUpTypeStyles.signUpButtonSelected
         ]} 
         onPress={handleVolunteerPress}
       >
-        <Text style={[
-          ButtonStyles.primaryButtonText,
-          { textAlign: 'center' }
-        ]}>
+        <Text style={SignUpTypeStyles.signUpButtonText}>
           I'm a Volunteer offering rides
         </Text>
       </TouchableOpacity>

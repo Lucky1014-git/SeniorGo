@@ -1,8 +1,11 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext';
+import { Colors, CurrentRidesStyles, HeaderStyles, SeniorDashboardStyles, TextStyles, TrackerStyles } from '../styles/globalStyles';
 
 const rideStatuses = [
   { icon: '🚕', label: 'Accepted' },
@@ -14,7 +17,9 @@ const rideStatuses = [
 
 export default function CurrentRides() {
   const { getUserInfo } = useUser();
-  const emailaddress = getUserInfo()?.emailaddress;
+  const userInfo = getUserInfo();
+  const groupName = userInfo?.groupname || 'No Group Assigned';
+  const emailaddress = userInfo?.emailaddress;
   const [rides, setRides] = useState<any[]>([]);
   const [currentStatus, setCurrentStatus] = useState<string | null>(null);
   const router = useRouter();
@@ -67,6 +72,10 @@ export default function CurrentRides() {
     };
     fetchStatus();
   }, [emailaddress]);
+
+  const handleSignOut = () => {
+    router.replace('/');
+  };
 
   // Cancel ride function
   const handleCancelRide = async (rideId: string) => {
@@ -167,20 +176,41 @@ export default function CurrentRides() {
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.backArrow} onPress={() => router.replace('/senior-dashboard')}>
-        <Text style={{ fontSize: 28, color: '#2F5233' }}>{'\u2190'}</Text>
+    <View style={CurrentRidesStyles.currentRidesContainer}>
+
+
+      <View style={HeaderStyles.headerRow}>
+      {/* Back Button on the left */}
+      <TouchableOpacity
+        style={HeaderStyles.headerButton}
+        onPress={() => router.replace('/senior-dashboard')}
+      >
+        <AntDesign name="home" size={25} color={Colors.primary} />
       </TouchableOpacity>
-      <Text style={styles.header}>Current Rides</Text>
+
+      {/* Logout Button on the right */}
+      <TouchableOpacity
+        style={HeaderStyles.headerButton}
+        onPress={handleSignOut}
+      >   
+      <MaterialIcons name="logout" size={25} color={Colors.primary} />
+      </TouchableOpacity>
+      </View>
+
+      <View style={SeniorDashboardStyles.navBar}>
+        <Text style={SeniorDashboardStyles.navBarText}>Current Requested Rides</Text>
+        <Text style={SeniorDashboardStyles.groupName}>({groupName})</Text>
+      </View>
+
       <ScrollView 
-        style={styles.rideList}
-        contentContainerStyle={styles.rideListContent}
+        style={CurrentRidesStyles.rideList}
+        contentContainerStyle={CurrentRidesStyles.rideListContent}
         showsVerticalScrollIndicator={true}
       >
         {loading ? (
-          <Text style={{ color: '#888', alignSelf: 'center', marginTop: 32 }}>Loading...</Text>
+          <Text style={{ color: Colors.lightText, alignSelf: 'center', marginTop: 32 }}>Loading...</Text>
         ) : rides.length === 0 ? (
-          <Text style={{ color: '#888', alignSelf: 'center', marginTop: 32 }}>No current rides found.</Text>
+          <Text style={{ color: Colors.lightText, alignSelf: 'center', marginTop: 32 }}>No current rides found.</Text>
         ) : (
           rides
             .filter((ride) => {
@@ -235,23 +265,23 @@ export default function CurrentRides() {
             };
 
             return (
-              <View key={ride.id || idx} style={styles.rideCard}>
+              <View key={ride.id || idx} style={CurrentRidesStyles.rideCard}>
                 {/* Ride Progress Tracker */}
-                <View style={styles.trackerContainer}>
+                <View style={TrackerStyles.trackerContainer}>
                   {rideStatuses.map((status, sidx) => {
                     // Color only the specific bar that matches the current status
                     const isActive = sidx === statusIndex;
                     return (
                       <React.Fragment key={status.label}>
                         <View style={[
-                          styles.trackerDivision,
-                          isActive && styles.trackerDivisionActive,
-                          sidx === 0 && styles.trackerDivisionFirst,
-                          sidx === rideStatuses.length - 1 && styles.trackerDivisionLast
+                          TrackerStyles.trackerDivision,
+                          isActive && TrackerStyles.trackerDivisionActive,
+                          sidx === 0 && TrackerStyles.trackerDivisionFirst,
+                          sidx === rideStatuses.length - 1 && TrackerStyles.trackerDivisionLast
                         ]}>
                           <Text style={[
-                            styles.trackerLabel,
-                            isActive && styles.trackerLabelActive
+                            TrackerStyles.trackerLabel,
+                            isActive && TrackerStyles.trackerLabelActive
                           ]}>
                             {status.label}
                           </Text>
@@ -260,29 +290,29 @@ export default function CurrentRides() {
                     );
                   })}
                 </View>
-                <Text style={styles.label}>Current Location:</Text>
-                <Text style={styles.value}>{ride.currentlocation}</Text>
-                <Text style={styles.label}>Dropoff Location:</Text>
-                <Text style={styles.value}>{ride.dropofflocation}</Text>
-                <Text style={styles.label}>Accepted By:</Text>
-                <Text style={styles.value}>{ride.acceptedby}</Text>
-                <View style={styles.pickupSection}>
-                  <View style={styles.pickupInfo}>
-                    <Text style={styles.label}>Pickup Date/Time:</Text>
-                    <Text style={styles.value}>
+                <Text style={TextStyles.label}>Current Location:</Text>
+                <Text style={TextStyles.value}>{ride.currentlocation}</Text>
+                <Text style={TextStyles.label}>Dropoff Location:</Text>
+                <Text style={TextStyles.value}>{ride.dropofflocation}</Text>
+                <Text style={TextStyles.label}>Accepted By:</Text>
+                <Text style={TextStyles.value}>{ride.acceptedby}</Text>
+                <View style={CurrentRidesStyles.pickupSection}>
+                  <View style={CurrentRidesStyles.pickupInfo}>
+                    <Text style={TextStyles.label}>Pickup Date/Time:</Text>
+                    <Text style={TextStyles.value}>
                       {formatLocalDateTime(ride.pickupDateTime)}
                       {ride.day && ` - ${ride.day}`}
                     </Text>
                   </View>
                   <TouchableOpacity
                     style={[
-                      styles.cancelButton,
-                      cancellingRides[ride.id] && styles.cancelButtonDisabled
+                      CurrentRidesStyles.cancelButton,
+                      cancellingRides[ride.id] && CurrentRidesStyles.cancelButtonDisabled
                     ]}
                     onPress={() => handleCancelRide(ride.id)}
                     disabled={cancellingRides[ride.id]}
                   >
-                    <Text style={styles.cancelButtonText}>
+                    <Text style={CurrentRidesStyles.cancelButtonText}>
                       {cancellingRides[ride.id] ? 'Cancelling...' : 'Cancel Ride'}
                     </Text>
                   </TouchableOpacity>
@@ -296,194 +326,9 @@ export default function CurrentRides() {
   );
 }
 
+// Any remaining page-specific styles that aren't in global styles
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F4FFF7',
-    paddingTop: 40,
-    paddingHorizontal: 16,
-  },
-  statusBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-  },
-  statusLabelBar: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  statusItem: {
-    alignItems: 'center',
-    width: 36,
-    flexDirection: 'column',
-    // Remove marginRight here, handled by connector
-  },
-  statusCircleButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFDF6',
-    borderRadius: 18,
-    width: 36,
-    height: 36,
-    borderWidth: 2,
-    borderColor: '#2F5233',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.07,
-    shadowRadius: 2,
-    marginBottom: 2,
-    zIndex: 2,
-  },
-  statusCircleActive: {
-    backgroundColor: '#4CAF50', // green fill
-    borderColor: '#388E3C',
-  },
-  statusConnector: {
-    height: 4,
-    backgroundColor: '#2F5233',
-    flex: 1,
-    alignSelf: 'center',
-    marginHorizontal: -2,
-    zIndex: 1,
-  },
-  statusIcon: {
-    fontSize: 16,
-    marginBottom: 0,
-  },
-  statusLabel: {
-    fontSize: 9,
-    color: '#2F5233',
-    fontWeight: '600',
-    textAlign: 'center',
-    marginTop: 4,
-    width: 36,
-    alignSelf: 'center',
-  },
-  backArrow: {
-    position: 'absolute',
-    top: 44,
-    left: 16,
-    zIndex: 10,
-    padding: 4,
-  },
-  rideList: {
-    flex: 1,
-    marginTop: 24,
-  },
-  rideListContent: {
-    paddingBottom: 20,
-  },
-  rideCard: {
-    backgroundColor: '#FFFDF6',
-    borderRadius: 14,
-    padding: 18,
-    marginBottom: 18,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
-  },
-  label: {
-    fontWeight: '600',
-    marginTop: 8,
-    color: '#2F5233',
-  },
-  value: {
-    fontSize: 15,
-    color: '#2F5233',
-    marginBottom: 8,
-  },
-  trackerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 22,
-    marginTop: 8,
-    width: '100%',
-  },
-  trackerDivision: {
-    flex: 1,
-    height: 16,
-    backgroundColor: '#E0E0E0',
-    marginHorizontal: 4,
-    borderRadius: 8,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    position: 'relative',
-    minWidth: 0,
-    // Ensure equal width for all divisions
-    maxWidth: '25%',
-  },
-  trackerDivisionActive: {
-    backgroundColor: '#4CAF50',
-  },
-  trackerDivisionFirst: {
-    marginLeft: 0,
-    borderTopLeftRadius: 12, // increased from 8
-    borderBottomLeftRadius: 12, // increased from 8
-  },
-  trackerDivisionLast: {
-    marginRight: 0,
-    borderTopRightRadius: 12, // increased from 8
-    borderBottomRightRadius: 12, // increased from 8
-  },
-  trackerLabel: {
-    position: 'absolute',
-    top: 20, // increased from 12
-    left: 0,
-    right: 0,
-    fontSize: 12, // increased from 9
-    color: '#2F5233',
-    fontWeight: '600',
-    textAlign: 'center',
-    paddingHorizontal: 2,
-  },
-  trackerLabelActive: {
-    color: '#388E3C',
-    fontWeight: 'bold',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2F5233',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  pickupSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginTop: 8,
-  },
-  pickupInfo: {
-    flex: 1,
-    marginRight: 12,
-  },
-  cancelButton: {
-    backgroundColor: '#FF6B6B',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 100,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  cancelButtonDisabled: {
-    backgroundColor: '#CCC',
-    opacity: 0.6,
-  },
-  cancelButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 14,
-  },
+  // Add any unique styles for this page here if needed
 });
 
 
