@@ -1,29 +1,106 @@
+import { Colors, HeaderStyles, SeniorDashboardStyles } from '@/styles/globalStyles';
 import { MaterialIcons } from '@expo/vector-icons';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useUser } from '../contexts/usercontext'; // import useUser
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const { getUserInfo } = useUser(); // get userInfo from context
+  
+  // Extract group name from user info, similar to senior-dashboard.tsx
+  const groupName = getUserInfo()?.groupname || 'No Group Assigned';
+  const name = getUserInfo()?.name || 'Admin';
+  const role = getUserInfo()?.role || 'N/A';
+
+
+  const handleSignOut = () => {
+    router.replace('/');
+  };
 
   return (
     <View style={styles.container}>
       {/* Signout Icon Button */}
-      <TouchableOpacity style={styles.signoutButton} onPress={() => router.replace('/')}> 
-        <MaterialIcons name="logout" size={22} color="#2F5233" />
-      </TouchableOpacity>
-      <View style={styles.navBar}>
-        <Text style={styles.navBarText}>Welcome, Admin!</Text>
-      </View>
-      <View style={styles.cardsGrid}>
+
+      <View style={HeaderStyles.headerRow}>
+        {/* Back/Home Button on the left */}
+        <View style={{ width: 25 }} />
+
+        {/* Logout Button on the right */}
         <TouchableOpacity
-          style={styles.cardLarge}
-          onPress={() => router.push('/create-group')}
+          style={HeaderStyles.headerButton}
+          onPress={handleSignOut}
         >
-          <Text style={styles.cardIcon}>👥</Text>
-          <Text style={styles.cardTitle}>Create Group</Text>
-          <Text style={styles.cardDesc}>Add a new group</Text>
+          <MaterialIcons name="logout" size={25} color={Colors.primary} />
         </TouchableOpacity>
+      </View>
+
+
+      {/* Welcome Section */}
+      <View style={SeniorDashboardStyles.navBar}>
+        <Text style={SeniorDashboardStyles.navBarText}>Welcome, {name}!</Text>
+        <View style={SeniorDashboardStyles.groupContainer}>
+          <Text style={SeniorDashboardStyles.groupLabel}>Group:</Text>
+          <Text style={SeniorDashboardStyles.groupName}>{groupName}</Text>
+        </View>
+      </View>
+      
+
+      <View style={SeniorDashboardStyles.cardsGrid}>
+        {role === 'GLOBAL_ADMIN' ? (
+          <>
+            <TouchableOpacity
+              style={SeniorDashboardStyles.card}
+              onPress={() => router.push('/create-group')}
+            >
+              <Text style={SeniorDashboardStyles.cardIcon}><AntDesign name="team" size={40} color={Colors.primary} /></Text>
+              <Text style={SeniorDashboardStyles.cardTitle}>Create Group</Text>
+              <Text style={SeniorDashboardStyles.cardDesc}>Add a new group</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={SeniorDashboardStyles.card}
+              onPress={() => router.push('/current-group')}
+            >
+              <Text style={SeniorDashboardStyles.cardIcon}><AntDesign name="profile" size={40} color={Colors.primary} /></Text>
+              <Text style={SeniorDashboardStyles.cardTitle}>Current Group</Text>
+              <Text style={SeniorDashboardStyles.cardDesc}>View current group</Text>
+            </TouchableOpacity>
+          </>
+        ) : role === 'GROUP_ADMIN' ? (
+          <>
+            <TouchableOpacity
+              style={SeniorDashboardStyles.card}
+              onPress={() => router.push('/track-seniors')}
+            >
+              <Text style={SeniorDashboardStyles.cardIcon}><AntDesign name="user" size={40} color={Colors.primary} /></Text>
+              <Text style={SeniorDashboardStyles.cardTitle}>Manage Seniors</Text>
+              <Text style={SeniorDashboardStyles.cardDesc}>Monitor/Manage seniors</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={SeniorDashboardStyles.card}
+              onPress={() => router.push('/track-volunteers')}
+            >
+              <Text style={SeniorDashboardStyles.cardIcon}><AntDesign name="team" size={40} color={Colors.primary} /></Text>
+              <Text style={SeniorDashboardStyles.cardTitle}>Manage Volunteers</Text>
+              <Text style={SeniorDashboardStyles.cardDesc}>Monitor/Manage volunteer</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={SeniorDashboardStyles.card}
+              onPress={() => router.push('/track-rides')}
+            >
+              <Text style={SeniorDashboardStyles.cardIcon}><AntDesign name="car" size={40} color={Colors.primary} /></Text>
+              <Text style={SeniorDashboardStyles.cardTitle}>Manage Rides</Text>
+              <Text style={SeniorDashboardStyles.cardDesc}>Monitor/Manage ride requests</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <Text style={SeniorDashboardStyles.navBarText}>Invalid admin role</Text>
+        )}
       </View>
     </View>
   );
@@ -44,6 +121,12 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     color: '#2F5233',
+  },
+  groupName: {
+    fontSize: 18,
+    color: '#4F8A8B',
+    fontWeight: '600',
+    marginTop: 2,
   },
   cardsGrid: {
     flexDirection: 'row',

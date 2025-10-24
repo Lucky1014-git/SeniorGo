@@ -10,7 +10,7 @@ const isDevelopment = __DEV__ || process.env.NODE_ENV === 'development';
 
 // Base URLs for different services
 export const API_BASE_URLS = {
-  MAIN_SERVICE: 'https://d65ee9c38316.ngrok-free.app',
+  MAIN_SERVICE: 'https://568ed5fc0e21.ngrok-free.app'
 } as const;
 
 // API Endpoints
@@ -34,6 +34,9 @@ export const API_ENDPOINTS = {
   UPDATE_STATUS: `${API_BASE_URLS.MAIN_SERVICE}/updateStatus`,
   UPDATE_STATUS_BAR: `${API_BASE_URLS.MAIN_SERVICE}/updateStatusBar`,
   CANCEL_RIDE: `${API_BASE_URLS.MAIN_SERVICE}/cancelRide`,
+  GET_VOLUNTEER_INFO: `${API_BASE_URLS.MAIN_SERVICE}/getVolunteerInfo`,
+  GET_SENIOR_INFO: `${API_BASE_URLS.MAIN_SERVICE}/getSeniorsInfo`,
+  GET_RIDES_INFO: `${API_BASE_URLS.MAIN_SERVICE}/getRidesInfo`,
 } as const;
 
 // Common headers

@@ -3,10 +3,12 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
+import { useUser } from '../contexts/usercontext';
 import { ButtonStyles, ContainerStyles, InputStyles, TextStyles } from '../styles/globalStyles';
 
 export default function AdminLogin() {
   const router = useRouter();
+  const { setUserInfo } = useUser();
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -24,8 +26,14 @@ export default function AdminLogin() {
         body: JSON.stringify({ userId, password }),
       });
       const data = await response.json();
-      if (response.ok && response.status === 200) {
-        router.replace('/admin-dashboard');
+      if (response.ok && data.message === 'success') {
+        Alert.alert('Success', 'Logged in successfully!');
+        console.log('User info:', data.userInfo);
+        setUserInfo({ ...data.userInfo, accountType: data.accountType }); // Set user info and accountType in context
+
+        if (data.accountType === 'admin') {
+          router.push('/admin-dashboard');
+        }
       } else {
         Alert.alert('Login Failed', data.message || 'Invalid credentials.');
       }

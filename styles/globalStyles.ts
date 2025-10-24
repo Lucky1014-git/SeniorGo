@@ -588,7 +588,7 @@ export const SeniorDashboardStyles = StyleSheet.create({
     alignItems: 'center',
   },
   navBarText: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
     color: Colors.primary,
   },
@@ -602,7 +602,7 @@ export const SeniorDashboardStyles = StyleSheet.create({
     fontWeight: '500',
   },
   groupName: {
-    fontSize: 18,
+    fontSize: 15,
     color: Colors.secondary,
     fontWeight: '600',
     marginTop: 2,
@@ -616,8 +616,32 @@ export const SeniorDashboardStyles = StyleSheet.create({
     marginBottom: 10
   },
   cardIcon: {
-    fontSize: 30,
-    marginBottom: 0,
+    fontSize: 40,
+    marginBottom: 10,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.primary,
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  cardDesc: {
+    fontSize: 15,
+    color: Colors.primary,
+    textAlign: 'center',
+  },
+  card: {
+    width: '100%',
+    backgroundColor: Colors.cardBackground,
+    borderRadius: 16,
+    padding: 10,
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.07,
+    shadowRadius: 4,
+    marginBottom: 12,
   },
 });
 
@@ -1007,10 +1031,10 @@ export const VolunteerDashboardStyles = StyleSheet.create({
     gap: 12,
   },
   card: {
-    width: '48%',
+    width: '100%',
     backgroundColor: Colors.cardBackground,
     borderRadius: 16,
-    padding: 24,
+    padding: 10,
     alignItems: 'center',
     elevation: 2,
     shadowColor: '#000',
@@ -1064,6 +1088,91 @@ export const VolunteerDashboardStyles = StyleSheet.create({
   }
 });
 
+export const RideRequestsStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    paddingTop: 40,
+    paddingHorizontal: 16,
+  },
+  backArrow: {
+    position: 'absolute',
+    top: 44,
+    left: 16,
+    zIndex: 10,
+    padding: 4,
+  },
+  header: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    marginBottom: 16,
+    alignSelf: 'center',
+  },
+  listContent: {
+    paddingBottom: 24,
+  },
+  card: {
+    backgroundColor: Colors.cardBackground,
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 18,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.07,
+    shadowRadius: 4,
+  },
+  label: {
+    fontWeight: '600',
+    marginTop: 8,
+    color: Colors.primary,
+  },
+  value: {
+    fontSize: 15,
+    color: Colors.primary,
+    marginBottom: 8,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 14,
+  },
+  approveButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+  },
+  contactButton: {
+    backgroundColor: Colors.secondary,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: Colors.cardBackground,
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  signoutButton: {
+    position: 'absolute',
+    top: 44,
+    right: 16,
+    zIndex: 20,
+    padding: 6,
+    backgroundColor: Colors.cardBackground,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signoutIcon: {
+    fontSize: 22,
+    color: Colors.primary,
+  },
+});
+
 // Combined common styles export
 export const CommonStyles = {
   Colors,
@@ -1075,6 +1184,7 @@ export const CommonStyles = {
   LayoutStyles,
   TrackerStyles,
   RideRequestStyles,
+  RideRequestsStyles,
   CurrentRidesStyles,
   HeaderStyles,
   SeniorDashboardStyles,

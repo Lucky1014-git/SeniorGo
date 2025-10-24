@@ -56,10 +56,10 @@ export default function VolunteerDashboard() {
           <Text style={VolunteerDashboardStyles.cardDesc}>View and accept ride requests from seniors</Text>
         </TouchableOpacity>
 
-        {/* Track Hours */}
+        {/* Track Volunteers */}
         <TouchableOpacity
           style={VolunteerDashboardStyles.card}
-          onPress={() => router.push('/track-hours')}
+          onPress={() => router.push('/track-volunteers')}
         >
           <Text style={VolunteerDashboardStyles.cardIcon}>⏱️</Text>
           <Text style={VolunteerDashboardStyles.cardTitle}>Track Hours</Text>

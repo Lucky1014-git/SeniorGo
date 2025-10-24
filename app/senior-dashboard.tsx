@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useUser } from '../contexts/usercontext'; // import useUser
-import { Colors, ContainerStyles, HeaderStyles, SeniorDashboardStyles, TextStyles } from '../styles/globalStyles';
+import { Colors, ContainerStyles, HeaderStyles, SeniorDashboardStyles } from '../styles/globalStyles';
 
 export default function SeniorDashboard() {
   const router = useRouter();
@@ -58,44 +58,42 @@ export default function SeniorDashboard() {
       {/* Cards Grid */}
       <View style={SeniorDashboardStyles.cardsGrid}>
           {/* Request a Ride */}
+
           <TouchableOpacity
-            style={ContainerStyles.cardLarge}
+            style={SeniorDashboardStyles.card}
             onPress={() => router.push('/request_a_ride')}
           > 
-            <View style={SeniorDashboardStyles.iconContainer}>
-              <AntDesign name="car" size={40} color={Colors.primary} />
-            </View>
-            <Text style={TextStyles.headerLarge}>Request a Ride</Text>
+          <Text style={SeniorDashboardStyles.cardIcon}><AntDesign name="car" size={40} color={Colors.primary} /></Text>
+          <Text style={SeniorDashboardStyles.cardTitle}>Request a Ride</Text>
+          <Text style={SeniorDashboardStyles.cardDesc}>Submit your ride request</Text>
           </TouchableOpacity>
 
           {/* Track Current Ride */}
           <TouchableOpacity
-            style={ContainerStyles.cardLarge}
+            style={SeniorDashboardStyles.card}
             onPress={() => router.push('/current-rides')}
           >
-            <View style={SeniorDashboardStyles.iconContainer}>
-              <MaterialCommunityIcons name="go-kart-track" size={40} color={Colors.primary} />
-            </View>
-            <Text style={TextStyles.headerLarge}>Track Current Ride</Text>
+
+          <Text style={SeniorDashboardStyles.cardIcon}><MaterialCommunityIcons name="go-kart-track" size={40} color={Colors.primary} /></Text>
+          <Text style={SeniorDashboardStyles.cardTitle}>Track Current Ride</Text>
+          <Text style={SeniorDashboardStyles.cardDesc}>View your current ride status</Text>
           </TouchableOpacity>
 
           {/* Request Recurring Ride */}
           <TouchableOpacity
-            style={ContainerStyles.cardLarge}
+            style={SeniorDashboardStyles.card}
             onPress={() => router.push('/recurring-ride')}
           >
-            <View style={SeniorDashboardStyles.iconContainer}>
-              <AntDesign name="car" size={40} color={Colors.primary} />
-            </View>
-            <Text style={TextStyles.headerLarge}>Request Recurring Ride</Text>
+            <Text style={SeniorDashboardStyles.cardIcon}><AntDesign name="car" size={40} color={Colors.primary} /></Text>
+            <Text style={SeniorDashboardStyles.cardTitle}>Request Recurring Ride</Text>
+            <Text style={SeniorDashboardStyles.cardDesc}>Set up a recurring ride schedule</Text>
           </TouchableOpacity>
 
           {/* Past Rides */}
-          <View style={ContainerStyles.cardLarge}>
-            <View style={SeniorDashboardStyles.iconContainer}>
-              <Octicons name="paste" size={40} color={Colors.primary} />
-            </View>
-            <Text style={TextStyles.headerLarge}>Past Rides</Text>
+          <View style={SeniorDashboardStyles.card}>
+            <Text style={SeniorDashboardStyles.cardIcon}><Octicons name="paste" size={40} color={Colors.primary} /></Text>
+            <Text style={SeniorDashboardStyles.cardTitle}>Past Rides</Text>
+            <Text style={SeniorDashboardStyles.cardDesc}>View your past ride history</Text>
           </View>
         </View>
     </View>

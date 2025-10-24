@@ -1,42 +1,52 @@
 import { MaterialIcons } from '@expo/vector-icons'; // Add this import
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext'; // <-- add this import
+import { Colors, HeaderStyles, RideRequestsStyles, SeniorDashboardStyles } from '../styles/globalStyles';
 
 export default function RideRequests() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [acceptingRide, setAcceptingRide] = useState(false);
+  const [loadingRides, setLoadingRides] = useState(false);
   const router = useRouter();
   const { getUserInfo } = useUser(); // <-- access useUser
   // Collect emailaddress from userInfo (from usercontext)
-  const emailaddress = getUserInfo()?.emailaddress; 
+  const emailaddress = getUserInfo()?.emailaddress;
+  const groupName = getUserInfo()?.groupname || 'No Group Assigned';
+
+
   console.log('Email address:', emailaddress); // Debugging line to check email address
+  
+  // Fetch active ride requests from backend API
+  const fetchRequests = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.ACTIVE_REQUESTS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emailaddress }),
+      });
+      const data = await response.json();
+      console.log('Fetched ride requests:', data);
+      setRequests(data.activeRequests); // ✅ Fix: unwrap the list
+    } catch (error) {
+      console.error('Fetch error:', error);
+      Alert.alert('Error', 'Failed to load ride requests.');
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    // Fetch active ride requests from backend API
-    const fetchRequests = async () => {
-      try {
-        const response = await fetch(API_ENDPOINTS.ACTIVE_REQUESTS, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ emailaddress }),
-        });
-        const data = await response.json();
-        console.log('Fetched ride requests:', data);
-        setRequests(data.activeRequests); // ✅ Fix: unwrap the list
-      } catch (error) {
-        console.error('Fetch error:', error);
-        Alert.alert('Error', 'Failed to load ride requests.');
-      }
-      setLoading(false);
-    };
     fetchRequests();
   }, [emailaddress]);
 
-  const approveRide = async (emailaddress: string, id: string) => {
+  const acceptRide = async (emailaddress: string, id: string) => {
+    setAcceptingRide(true);
     try {
-      console.log('Approving ride:', { emailaddress, id });
+      console.log('Accepting ride:', { emailaddress, id });
       const response = await fetch(API_ENDPOINTS.ACCEPT_REQUESTS, {
         method: 'POST',
         headers: {
@@ -47,16 +57,21 @@ export default function RideRequests() {
       if (!response.ok) {
         throw new Error('Failed to accept ride');
       }
-      Alert.alert('Ride Accepted');
-      // Find the approved ride from requests
-      const approvedRide = requests.find(r => r.id === id);
-      // Navigate to approved-rides page and pass ride info
-      router.push({
-        pathname: '/approved-rides',
-        params: { ride: JSON.stringify(approvedRide) }
-      });
+      setAcceptingRide(false);
+      Alert.alert('Ride Accepted', '', [
+        {
+          text: 'OK',
+          onPress: async () => {
+            setLoadingRides(true);
+            // Refresh the requests list to show updated data
+            await fetchRequests();
+            setLoadingRides(false);
+          }
+        }
+      ]);
     } catch (error) {
       console.error('Accept ride error:', error);
+      setAcceptingRide(false);
       Alert.alert('Error', 'Failed to accept ride.');
     }
   };
@@ -90,23 +105,25 @@ export default function RideRequests() {
   }
 
   const renderRequest = ({ item }: { item: any }) => (
-    <View style={styles.card}>
-      <Text style={styles.label}>Email:</Text>
-      <Text style={styles.value}>{item.userEmailAddress}</Text>
-      <Text style={styles.label}>Current Location:</Text>
-      <Text style={styles.value}>{item.currentlocation}</Text>
-      <Text style={styles.label}>Dropoff Location:</Text>
-      <Text style={styles.value}>{item.dropofflocation}</Text>
-      <Text style={styles.label}>Pickup Date/Time:</Text>
-      <Text style={styles.value}>
+    <View style={RideRequestsStyles.card}>
+      <Text style={RideRequestsStyles.label}>Name:</Text>
+      <Text style={RideRequestsStyles.value}>{item.fullname || 'N/A'}</Text>
+      <Text style={RideRequestsStyles.label}>Email:</Text>
+      <Text style={RideRequestsStyles.value}>{item.userEmailAddress}</Text>
+      <Text style={RideRequestsStyles.label}>Current Location:</Text>
+      <Text style={RideRequestsStyles.value}>{item.currentlocation}</Text>
+      <Text style={RideRequestsStyles.label}>Dropoff Location:</Text>
+      <Text style={RideRequestsStyles.value}>{item.dropofflocation}</Text>
+      <Text style={RideRequestsStyles.label}>Pickup Date/Time:</Text>
+      <Text style={RideRequestsStyles.value}>
         {formatLocalDateTime(item.pickupDateTime)}
       </Text>
-      <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.approveButton} onPress={() => approveRide(emailaddress, item.id)}>
-          <Text style={styles.buttonText}>Accept Ride</Text>
+      <View style={RideRequestsStyles.buttonRow}>
+        <TouchableOpacity style={RideRequestsStyles.approveButton} onPress={() => acceptRide(emailaddress, item.id)}>
+          <Text style={RideRequestsStyles.buttonText}>Accept Ride</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.contactButton} onPress={() => contactSenior(item.email)}>
-          <Text style={styles.buttonText}>Contact</Text>
+        <TouchableOpacity style={RideRequestsStyles.contactButton} onPress={() => contactSenior(item.email)}>
+          <Text style={RideRequestsStyles.buttonText}>Contact Rider</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -123,112 +140,53 @@ export default function RideRequests() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={RideRequestsStyles.container}>
+
+
       {/* Signout Icon Button */}
-      <TouchableOpacity style={styles.signoutButton} onPress={handleSignOut}>
-        <MaterialIcons name="logout" size={22} color="#2F5233" />
-      </TouchableOpacity>
-      {/* Back Arrow Button */}
-      <TouchableOpacity style={styles.backArrow} onPress={goBack}>
-        <Text style={{ fontSize: 28, color: '#2F5233' }}>{'\u2190'}</Text>
-      </TouchableOpacity>
-      <Text style={styles.header}>Ride Requests</Text>
+      <View style={HeaderStyles.headerRow} >
+        {/* Back Button on the left */}
+        <TouchableOpacity
+          style={HeaderStyles.headerButton}
+          onPress={() => router.replace('/volunteer-dashboard')}
+        >
+          <AntDesign name="home" size={25} color={Colors.primary} />
+        </TouchableOpacity>
+
+        {/* Logout Button on the right */}
+        <TouchableOpacity
+          style={HeaderStyles.headerButton}
+          onPress={handleSignOut}
+        >
+          <MaterialIcons name="logout" size={25} color={Colors.primary} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={SeniorDashboardStyles.navBar}>
+        <Text style={SeniorDashboardStyles.navBarText}>Ride Requests</Text>
+        <Text style={SeniorDashboardStyles.groupName}>({groupName})</Text>
+      </View>
+
       {loading ? (
         <ActivityIndicator size="large" color="#2F5233" style={{ marginTop: 40 }} />
       ) : (
-        <FlatList
-          data={requests}
-          keyExtractor={item => item.id}
-          renderItem={renderRequest}
-          contentContainerStyle={styles.listContent}
-        />
+        <>
+          <FlatList
+            data={requests}
+            keyExtractor={item => item.id}
+            renderItem={renderRequest}
+            contentContainerStyle={RideRequestsStyles.listContent}
+          />
+          {(acceptingRide || loadingRides) && (
+            <View style={{ position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -25 }, { translateY: -25 }], backgroundColor: 'rgba(0,0,0,0.7)', padding: 20, borderRadius: 10 }}>
+              <ActivityIndicator size="large" color="#FFFDF6" />
+              <Text style={{ color: '#FFFDF6', marginTop: 10, textAlign: 'center' }}>
+                {acceptingRide ? 'Accepting Ride...' : 'Loading Rides...'}
+              </Text>
+            </View>
+          )}
+        </>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F4FFF7',
-    paddingTop: 40,
-    paddingHorizontal: 16,
-  },
-  backArrow: {
-    position: 'absolute',
-    top: 44,
-    left: 16,
-    zIndex: 10,
-    padding: 4,
-  },
-  header: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2F5233',
-    marginBottom: 16,
-    alignSelf: 'center',
-  },
-  listContent: {
-    paddingBottom: 24,
-  },
-  card: {
-    backgroundColor: '#FFFDF6',
-    borderRadius: 14,
-    padding: 18,
-    marginBottom: 18,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
-  },
-  label: {
-    fontWeight: '600',
-    marginTop: 8,
-    color: '#2F5233',
-  },
-  value: {
-    fontSize: 15,
-    color: '#2F5233',
-    marginBottom: 8,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 14,
-  },
-  approveButton: {
-    backgroundColor: '#2F5233',
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 8,
-  },
-  contactButton: {
-    backgroundColor: '#4F8A8B',
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: '#FFFDF6',
-    fontWeight: '600',
-    fontSize: 15,
-  },
-  signoutButton: {
-    position: 'absolute',
-    top: 44,
-    right: 16,
-    zIndex: 20,
-    padding: 6,
-    backgroundColor: '#FFFDF6',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#2F5233',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  signoutIcon: {
-    fontSize: 22,
-    color: '#2F5233',
-  },
-});
-
