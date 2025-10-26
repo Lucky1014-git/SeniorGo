@@ -189,6 +189,7 @@ export const ButtonStyles = StyleSheet.create({
     color: Colors.cardBackground,
     fontWeight: '600',
     fontSize: 18,
+    textAlign: 'center',
   },
   backButton: {
     marginTop: 30,
@@ -226,9 +227,9 @@ export const ButtonStyles = StyleSheet.create({
 export const InputStyles = StyleSheet.create({
   input: {
     width: '100%',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: Colors.primary,
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 12,
     marginBottom: 20,
     backgroundColor: Colors.white,
@@ -237,7 +238,7 @@ export const InputStyles = StyleSheet.create({
     width: '100%',
     padding: 12,
     marginBottom: 12,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: Colors.primary,
     borderRadius: 8,
     backgroundColor: Colors.cardBackground,
@@ -358,7 +359,7 @@ export const RideRequestStyles = StyleSheet.create({
     width: '100%',
     padding: 10,
     marginBottom: 0,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: Colors.primary,
     borderRadius: 8,
     backgroundColor: Colors.cardBackground,
@@ -422,8 +423,6 @@ export const RideRequestStyles = StyleSheet.create({
     marginTop: 2,
     zIndex: 1000,
     elevation: 5,
-    position: 'absolute',
-    bottom: 72,
   },
   suggestionItem: {
     padding: 10,
@@ -456,14 +455,18 @@ export const CurrentRidesStyles = StyleSheet.create({
     paddingBottom: 20,
   },
   rideCard: {
-    backgroundColor: Colors.cardBackground,
+    backgroundColor: '#FFFDF6',
     borderRadius: 14,
     padding: 18,
-    marginBottom: 18,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
+    marginBottom: 15,
+    // Stronger shadow for both iOS and Android
+    elevation: 8, // Android
+    shadowColor: '#2F5233',
+    shadowOpacity: 0.28, // iOS
+    shadowRadius: 20,    // iOS
+    shadowOffset: { width: 0, height: 10 }, // iOS
+    borderWidth: 2,
+    borderColor: '#2F5233',
   },
   pickupSection: {
     flexDirection: 'row',
@@ -672,7 +675,7 @@ export const RecurringRideStyles = StyleSheet.create({
     width: '100%',
     padding: 10,
     marginBottom: 0,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: Colors.primary,
     borderRadius: 8,
     backgroundColor: Colors.cardBackground,
@@ -846,7 +849,7 @@ export const VolunteerSignUpStyles = StyleSheet.create({
     width: '100%',
     padding: 10,
     marginBottom: 12,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: Colors.primary,
     borderRadius: 8,
     backgroundColor: Colors.cardBackground,

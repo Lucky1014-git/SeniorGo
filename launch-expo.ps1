@@ -6,7 +6,7 @@
 $emulatorPath = "C:\Users\vkalp\AppData\Local\Android\Sdk\emulator\emulator.exe"
 
 # Names of your AVDs
-$emulatorNames = @("Pixel_5", "Pixel_5_2")
+$emulatorNames = @("phone1", "phone2")
 
 # Your Expo URL
 $expoURL = "exp://10.0.0.23:8081"
