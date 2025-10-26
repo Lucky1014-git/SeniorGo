@@ -10,7 +10,7 @@ const isDevelopment = __DEV__ || process.env.NODE_ENV === 'development';
 
 // Base URLs for different services
 export const API_BASE_URLS = {
-  MAIN_SERVICE: 'https://3a3637ed53aa.ngrok-free.app'
+  MAIN_SERVICE: 'https://seniorgoserver.onrender.com'
 } as const;
 
 // API Endpoints
@@ -40,7 +40,7 @@ export const API_ENDPOINTS = {
   UPDATE_STATUS: `${API_BASE_URLS.MAIN_SERVICE}/updateStatus`,
   UPDATE_STATUS_BAR: `${API_BASE_URLS.MAIN_SERVICE}/updateStatusBar`,
   CANCEL_RIDE: `${API_BASE_URLS.MAIN_SERVICE}/cancelRide`,
-  GET_VOLUNTEER_INFO: `${API_BASE_URLS.MAIN_SERVICE}/getVolunteersInfo`,
+  GET_VOLUNTEER_INFO: `${API_BASE_URLS.MAIN_SERVICE}/getVolunteerInfo`,
   GET_SENIOR_INFO: `${API_BASE_URLS.MAIN_SERVICE}/getSeniorsInfo`,
   GET_RIDES_INFO: `${API_BASE_URLS.MAIN_SERVICE}/getRidesInfo`,
   GET_RIDER_INFO: `${API_BASE_URLS.MAIN_SERVICE}/getRiderInfo`,
