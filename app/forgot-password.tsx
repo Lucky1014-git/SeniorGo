@@ -1,8 +1,9 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
+import { VolunteerSignUpStyles } from '../styles/globalStyles';
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -43,9 +44,9 @@ export default function ForgotPassword() {
 
   return (
     <View style={styles.container}>
-      {/* Signout Icon Button */}
-      <TouchableOpacity style={styles.signoutButton} onPress={() => router.replace('/')}>
-        <MaterialIcons name="logout" size={22} color="#2F5233" />
+      {/* Back Button like volunteer signup */}
+      <TouchableOpacity style={VolunteerSignUpStyles.volunteerBackArrow} onPress={() => router.replace('/')}>
+        <Ionicons name="arrow-back-circle-outline" size={30} color="black" />
       </TouchableOpacity>
       <Text style={styles.header}>Forgot Your Password?</Text>
       <Text style={styles.subtext}>

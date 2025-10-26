@@ -1,9 +1,9 @@
-import { MaterialIcons } from '@expo/vector-icons'; // Add this import
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
-import { ButtonStyles, ContainerStyles, FormStyles, InputStyles, TextStyles } from '../styles/globalStyles';
+import { ButtonStyles, ContainerStyles, InputStyles, VolunteerSignUpStyles } from '../styles/globalStyles';
 
 export default function SeniorSignUp() {
   const router = useRouter();
@@ -14,15 +14,33 @@ export default function SeniorSignUp() {
     password: '',
     confirmPassword: '',
     address: '',
-    agree: false,
+    agree: '', // Changed from boolean to string to match volunteer signup pattern
   });
   const [submitting, setSubmitting] = useState(false);
   const [groupCode, setGroupCode] = useState('');
 
   const handleChange = (key: string, value: any) => setForm({ ...form, [key]: value });
 
+  // Radio button component similar to volunteer signup
+  const YesNo = ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+    <View style={VolunteerSignUpStyles.radioRow}>
+      <TouchableOpacity onPress={() => onChange('yes')} style={VolunteerSignUpStyles.radioOption}>
+        <View style={[VolunteerSignUpStyles.radioButton, value === 'yes' && VolunteerSignUpStyles.radioButtonSelected]}>
+          {value === 'yes' && <View style={VolunteerSignUpStyles.radioButtonInner} />}
+        </View>
+        <Text style={VolunteerSignUpStyles.radioLabel}>Yes</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => onChange('no')} style={VolunteerSignUpStyles.radioOption}>
+        <View style={[VolunteerSignUpStyles.radioButton, value === 'no' && VolunteerSignUpStyles.radioButtonSelected]}>
+          {value === 'no' && <View style={VolunteerSignUpStyles.radioButtonInner} />}
+        </View>
+        <Text style={VolunteerSignUpStyles.radioLabel}>No</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   const handleSubmit = async () => {
-    if (!form.agree) {
+    if (form.agree !== 'yes') {
       Alert.alert('Agreement Required', 'You must agree to the Terms of Service & Privacy Policy.');
       return;
     }
@@ -73,14 +91,12 @@ export default function SeniorSignUp() {
 
   return (
     <View style={ContainerStyles.signupContainer}>
-      {/* Signout Icon Button */}
-      <TouchableOpacity style={ButtonStyles.signoutButton} onPress={handleSignOut}>
-        <MaterialIcons name="logout" size={22} color="#2F5233" />
+      {/* Back Button like volunteer signup */}
+      <TouchableOpacity style={VolunteerSignUpStyles.volunteerBackArrow} onPress={() => router.back()}>
+        <Ionicons name="arrow-back-circle-outline" size={30} color="black" />
       </TouchableOpacity>
-      <TouchableOpacity style={ButtonStyles.backArrowAlt} onPress={() => router.back()}>
-        <Text style={ButtonStyles.backArrowText}>{'←'}</Text>
-      </TouchableOpacity>
-      <Text style={TextStyles.header}>Senior Sign Up</Text>
+
+      <Text style={VolunteerSignUpStyles.volunteerHeader}>Senior Sign Up</Text>
       <TextInput style={InputStyles.inputAlt} placeholder="Full Name" value={form.fullName} onChangeText={t => handleChange('fullName', t)} />
       <TextInput style={InputStyles.inputAlt} placeholder="Phone Number" value={form.phone} onChangeText={t => handleChange('phone', t)} keyboardType="phone-pad" />
       <TextInput style={InputStyles.inputAlt} placeholder="Email" value={form.email} onChangeText={t => handleChange('email', t)} keyboardType="email-address" autoCapitalize="none" />
@@ -88,12 +104,13 @@ export default function SeniorSignUp() {
       <TextInput style={InputStyles.inputAlt} placeholder="Confirm Password" value={form.confirmPassword} onChangeText={t => handleChange('confirmPassword', t)} secureTextEntry />
       <TextInput style={InputStyles.inputAlt} placeholder="Home Address or ZIP Code" value={form.address} onChangeText={t => handleChange('address', t)} />
       <TextInput style={InputStyles.inputAlt} placeholder="Group Code" value={groupCode} onChangeText={setGroupCode} />
-      <View style={FormStyles.checkboxContainer}>
-        <TouchableOpacity onPress={() => handleChange('agree', !form.agree)} style={FormStyles.customCheckbox}>
-          <Text style={FormStyles.checkboxIcon}>{form.agree ? '🔘' : '⭕'}</Text>
-        </TouchableOpacity>
-        <Text style={FormStyles.checkboxLabel}>I agree to the Terms of Service & Privacy Policy</Text>
+      
+      {/* Agreement section with radio button style */}
+      <View style={styles.questionSection}>
+        <Text style={VolunteerSignUpStyles.question}>I agree to the Terms of Service & Privacy Policy</Text>
+        <YesNo value={form.agree} onChange={(v) => handleChange('agree', v)} />
       </View>
+      
       <TouchableOpacity style={ButtonStyles.submitButton} onPress={handleSubmit} disabled={submitting}>
         <Text style={ButtonStyles.submitButtonText}>{submitting ? 'Submitting...' : 'Submit'}</Text>
       </TouchableOpacity>
@@ -103,5 +120,10 @@ export default function SeniorSignUp() {
 
 // Any remaining page-specific styles that aren't in global styles
 const styles = StyleSheet.create({
-  // Add any unique styles for this page here if needed
+  questionSection: {
+    marginTop: 16,
+    marginBottom: 16,
+    alignSelf: 'flex-start',
+    width: '100%',
+  },
 });

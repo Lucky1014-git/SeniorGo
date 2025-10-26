@@ -62,11 +62,29 @@ export default function AdminDashboard() {
             
             <TouchableOpacity
               style={SeniorDashboardStyles.card}
-              onPress={() => router.push('/current-group')}
+              onPress={() => router.push('/create-admin-group')}
             >
               <Text style={SeniorDashboardStyles.cardIcon}><AntDesign name="profile" size={40} color={Colors.primary} /></Text>
-              <Text style={SeniorDashboardStyles.cardTitle}>Current Group</Text>
-              <Text style={SeniorDashboardStyles.cardDesc}>View current group</Text>
+              <Text style={SeniorDashboardStyles.cardTitle}>Group Admin User</Text>
+              <Text style={SeniorDashboardStyles.cardDesc}>Create new group admin user</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={SeniorDashboardStyles.card}
+              onPress={() => router.push('/manage-groups')}
+            >
+              <Text style={SeniorDashboardStyles.cardIcon}><AntDesign name="setting" size={40} color={Colors.primary} /></Text>
+              <Text style={SeniorDashboardStyles.cardTitle}>Manage Groups</Text>
+              <Text style={SeniorDashboardStyles.cardDesc}>View and manage all groups</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={SeniorDashboardStyles.card}
+              onPress={() => router.push('/manage-admin-users')}
+            >
+              <Text style={SeniorDashboardStyles.cardIcon}><AntDesign name="contacts" size={40} color={Colors.primary} /></Text>
+              <Text style={SeniorDashboardStyles.cardTitle}>Manage Group Admin User</Text>
+              <Text style={SeniorDashboardStyles.cardDesc}>View and manage admin users</Text>
             </TouchableOpacity>
           </>
         ) : role === 'GROUP_ADMIN' ? (

@@ -30,8 +30,13 @@ export default function SeniorDashboard() {
 
 
       <View style={HeaderStyles.headerRow}>
-        {/* Back/Home Button on the left */}
-        <View style={{ width: 25 }} /> 
+        {/* Person Icon Button on the left */}
+        <TouchableOpacity
+          style={HeaderStyles.headerButton}
+          onPress={() => router.push('/edit-senior-account')}
+        >
+          <MaterialIcons name="person" size={25} color={Colors.primary} />
+        </TouchableOpacity>
 
         {/* Logout Button on the right */}
         <TouchableOpacity

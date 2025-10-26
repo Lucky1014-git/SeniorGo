@@ -27,7 +27,7 @@ export default function CreateGroup() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          emailaddress,
+          emailaddress:groupAdminEmail,
           groupname: groupName,
           grouptype: groupType,
           location: groupLocation,

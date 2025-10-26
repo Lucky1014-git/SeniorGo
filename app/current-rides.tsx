@@ -2,7 +2,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { API_ENDPOINTS } from '../constants/api';
 import { useUser } from '../contexts/usercontext';
 import { Colors, CurrentRidesStyles, HeaderStyles, SeniorDashboardStyles, TextStyles, TrackerStyles } from '../styles/globalStyles';
@@ -26,6 +26,8 @@ export default function CurrentRides() {
   const [loading, setLoading] = useState(true);
   const [rideStatusBar, setRideStatusBar] = useState<{ [key: string]: string }>({});
   const [cancellingRides, setCancellingRides] = useState<{ [key: string]: boolean }>({});
+  const [volunteerModalVisible, setVolunteerModalVisible] = useState(false);
+  const [selectedVolunteer, setSelectedVolunteer] = useState<any>(null);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -295,7 +297,36 @@ export default function CurrentRides() {
                 <Text style={TextStyles.label}>Dropoff Location:</Text>
                 <Text style={TextStyles.value}>{ride.dropofflocation}</Text>
                 <Text style={TextStyles.label}>Accepted By:</Text>
-                <Text style={TextStyles.value}>{ride.acceptedby}</Text>
+                {ride.acceptedby ? (
+                  <TouchableOpacity
+                    onPress={async () => {
+                      try {
+                        const response = await fetch(API_ENDPOINTS.GET_VOLUNTEER_INFO, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ emailaddress: ride.acceptedby }),
+                        });
+                        const data = await response.json();
+                        
+                        if (data.volunteer) {
+                          setSelectedVolunteer(data.volunteer);
+                          setVolunteerModalVisible(true);
+                        } else {
+                          Alert.alert('Error', 'Volunteer information not found.');
+                        }
+                      } catch (error) {
+                        console.error('Error fetching volunteer info:', error);
+                        Alert.alert('Error', 'Failed to fetch volunteer information.');
+                      }
+                    }}
+                  >
+                    <Text style={[TextStyles.value, { color: Colors.primary, textDecorationLine: 'underline' }]}>
+                      {ride.acceptedby}
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <Text style={TextStyles.value}>Not Assigned</Text>
+                )}
                 <View style={CurrentRidesStyles.pickupSection}>
                   <View style={CurrentRidesStyles.pickupInfo}>
                     <Text style={TextStyles.label}>Pickup Date/Time:</Text>
@@ -322,13 +353,197 @@ export default function CurrentRides() {
           })
         )}
       </ScrollView>
+
+      {/* Volunteer Information Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={volunteerModalVisible}
+        onRequestClose={() => {
+          setVolunteerModalVisible(false);
+          setSelectedVolunteer(null);
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.modalTitle}>Volunteer Information</Text>
+              
+              {/* Volunteer Image */}
+              {selectedVolunteer?.imageURL && (
+                <View style={styles.imageContainer}>
+                  <Image 
+                    source={{ uri: selectedVolunteer.imageURL }} 
+                    style={styles.volunteerImage}
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
+              
+              {/* Volunteer Details */}
+              <View style={styles.detailsContainer}>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Name:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.fullname || 'N/A'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Email:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.emailaddress || 'N/A'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Phone:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.phone || 'N/A'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Address:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.address || 'N/A'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Date of Birth:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.dateofbirth || 'N/A'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Has Driver License:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.hasdriverlicense === true || selectedVolunteer?.hasdriverlicense === 'true' ? 'Yes' : 'No'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>License Number:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.licensenumber || 'N/A'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Has Vehicle:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.hasvehicle === true || selectedVolunteer?.hasvehicle === 'true' ? 'Yes' : 'No'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Vehicle Type:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.vehicletype || 'N/A'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Proof of Insurance:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.proofofinsurance === true || selectedVolunteer?.proofofinsurance === 'true' ? 'Yes' : 'No'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>First Aid Trained:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.firstaidtrained === true || selectedVolunteer?.firstaidtrained === 'true' ? 'Yes' : 'No'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Mobility Assistance:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.mobilityassistance === true || selectedVolunteer?.mobilityassistance === 'true' ? 'Yes' : 'No'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Volunteered Before:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.volunteeredbefore === true || selectedVolunteer?.volunteeredbefore === 'true' ? 'Yes' : 'No'}</Text>
+                </View>
+                
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Background Check Consent:</Text>
+                  <Text style={styles.detailValue}>{selectedVolunteer?.backgroundcheckconsent === true || selectedVolunteer?.backgroundcheckconsent === 'true' ? 'Yes' : 'No'}</Text>
+                </View>
+              </View>
+              
+              {/* Close Button */}
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => {
+                  setVolunteerModalVisible(false);
+                  setSelectedVolunteer(null);
+                }}
+              >
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 // Any remaining page-specific styles that aren't in global styles
 const styles = StyleSheet.create({
-  // Add any unique styles for this page here if needed
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFDF6',
+    borderRadius: 15,
+    padding: 20,
+    maxHeight: '80%',
+    width: '100%',
+    maxWidth: 400,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  volunteerImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
+    borderColor: Colors.primary,
+  },
+  detailsContainer: {
+    marginBottom: 20,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    marginBottom: 12,
+    alignItems: 'flex-start',
+  },
+  detailLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.primary,
+    width: 100,
+    marginRight: 10,
+  },
+  detailValue: {
+    fontSize: 16,
+    color: Colors.primary,
+    flex: 1,
+    flexWrap: 'wrap',
+  },
+  closeButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#FFFDF6',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
 
 

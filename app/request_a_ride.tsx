@@ -4,7 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import type { LatLng, Region } from 'react-native-maps';
 import MapView, { Marker } from 'react-native-maps';
 import { API_ENDPOINTS } from '../constants/api';
@@ -69,21 +69,113 @@ export default function RequestARide() {
 
   useEffect(() => {
     (async () => {
+      const startTime = Date.now();
+      console.log('🗺️ Starting location request...');
+      
       let { status } = await Location.requestForegroundPermissionsAsync();
+      console.log('📍 Permission status:', status, `(${Date.now() - startTime}ms)`);
+      
       if (status !== 'granted') {
+        console.log('❌ Location permission denied');
+        Alert.alert('Permission needed', 'Location permission is required to show the map');
         return;
       }
-      let location = await Location.getCurrentPositionAsync({});
-      setRegion({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      } as Region);
-      setMarker({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      } as LatLng);
+      
+      // Try last known position FIRST (much faster)
+      console.log('� Checking for cached location...');
+      try {
+        let lastLocation = await Location.getLastKnownPositionAsync({
+          maxAge: 300000, // 5 minutes
+          requiredAccuracy: 1000, // 1km is fine for map display
+        });
+        
+        if (lastLocation) {
+          console.log('⚡ Using cached location:', lastLocation.coords, `(${Date.now() - startTime}ms)`);
+          const newRegion = {
+            latitude: lastLocation.coords.latitude,
+            longitude: lastLocation.coords.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          } as Region;
+          
+          setRegion(newRegion);
+          setMarker({
+            latitude: lastLocation.coords.latitude,
+            longitude: lastLocation.coords.longitude,
+          } as LatLng);
+          
+          // Still try to get fresh location in background, but don't wait
+          setTimeout(async () => {
+            try {
+              console.log('🔄 Getting fresh location in background...');
+              let freshLocation = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Low, // Use LOW for speed
+              });
+              console.log('🆕 Fresh location received:', freshLocation.coords);
+              
+              // Update with fresh location
+              const freshRegion = {
+                latitude: freshLocation.coords.latitude,
+                longitude: freshLocation.coords.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              } as Region;
+              
+              setRegion(freshRegion);
+              setMarker({
+                latitude: freshLocation.coords.latitude,
+                longitude: freshLocation.coords.longitude,
+              } as LatLng);
+            } catch (e) {
+              console.log('🤷 Background location update failed (keeping cached location)');
+            }
+          }, 100);
+          
+          return; // Exit early with cached location
+        }
+      } catch (e) {
+        console.log('🔍 No cached location available');
+      }
+      
+      console.log('📡 Getting fresh location...', `(${Date.now() - startTime}ms)`);
+      try {
+        // Use LOW accuracy for much faster response
+        let location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Low, // LOW is much faster than Balanced
+        });
+        console.log('✅ Fresh location received:', location.coords, `(${Date.now() - startTime}ms)`);
+        
+        const newRegion = {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        } as Region;
+        
+        setRegion(newRegion);
+        setMarker({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        } as LatLng);
+        
+      } catch (error) {
+        console.log('❌ Location error:', error, `(${Date.now() - startTime}ms)`);
+        console.log('💭 Using default location (New York)');
+        
+        // Use default location
+        const defaultRegion = {
+          latitude: 40.7128,
+          longitude: -74.0060,
+          latitudeDelta: 0.1,
+          longitudeDelta: 0.1,
+        } as Region;
+        
+        setRegion(defaultRegion);
+        setMarker({
+          latitude: 40.7128,
+          longitude: -74.0060,
+        } as LatLng);
+      }
     })();
   }, []);
 
@@ -197,23 +289,31 @@ export default function RequestARide() {
           textAlignVertical="top"
         />
         {addressSuggestions.length > 0 && (
-          <FlatList
-            data={addressSuggestions}
-            keyExtractor={item => item.osm_id?.toString() || item.display_name}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={RideRequestStyles.suggestionItem}
-                onPress={() => {
-                  setAddressQuery(item.display_name);
-                  setAddressSuggestions([]);
-                  setCurrentLocation(item.display_name);
-                }}
-              >
-                <Text>{item.display_name}</Text>
-              </TouchableOpacity>
-            )}
-            style={RideRequestStyles.suggestionList}
-          />
+          <View style={RideRequestStyles.suggestionList}>
+            {addressSuggestions.slice(0, 5).map((item, index) => {
+              // Remove county information from display_name
+              const cleanAddress = item.display_name
+                .split(', ')
+                .filter((part: string) => !part.includes('County'))
+                .join(', ')
+                .replace('United States of America', 'USA')
+                .replace('United States', 'USA');
+              
+              return (
+                <TouchableOpacity
+                  key={item.osm_id?.toString() || `address-${index}`}
+                  style={RideRequestStyles.suggestionItem}
+                  onPress={() => {
+                    setAddressQuery(cleanAddress);
+                    setAddressSuggestions([]);
+                    setCurrentLocation(cleanAddress);
+                  }}
+                >
+                  <Text>{cleanAddress}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         )}
       </View>
       
@@ -232,23 +332,31 @@ export default function RequestARide() {
           textAlignVertical="top"
         />
         {dropoffSuggestions.length > 0 && (
-          <FlatList
-            data={dropoffSuggestions}
-            keyExtractor={item => item.osm_id?.toString() || item.display_name}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={RideRequestStyles.suggestionItem}
-                onPress={() => {
-                  setDropoffQuery(item.display_name);
-                  setDropoffSuggestions([]);
-                  setDropoffLocation(item.display_name);
-                }}
-              >
-                <Text>{item.display_name}</Text>
-              </TouchableOpacity>
-            )}
-            style={RideRequestStyles.suggestionList}
-          />
+          <View style={RideRequestStyles.suggestionList}>
+            {dropoffSuggestions.slice(0, 5).map((item, index) => {
+              // Remove county information from display_name
+              const cleanAddress = item.display_name
+                .split(', ')
+                .filter((part: string) => !part.includes('County'))
+                .join(', ')
+                .replace('United States of America', 'USA')
+                .replace('United States', 'USA');
+              
+              return (
+                <TouchableOpacity
+                  key={item.osm_id?.toString() || `dropoff-${index}`}
+                  style={RideRequestStyles.suggestionItem}
+                  onPress={() => {
+                    setDropoffQuery(cleanAddress);
+                    setDropoffSuggestions([]);
+                    setDropoffLocation(cleanAddress);
+                  }}
+                >
+                  <Text>{cleanAddress}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         )}
       </View>
 
@@ -326,7 +434,7 @@ export default function RequestARide() {
           }}
         />
       )}
-      {region && (
+      {region ? (
         <MapView
           style={RideRequestStyles.map}
           region={region}
@@ -334,6 +442,12 @@ export default function RequestARide() {
         >
           {marker && <Marker coordinate={marker} />}
         </MapView>
+      ) : (
+        <View style={RideRequestStyles.map}>
+          <Text style={{ textAlign: 'center', marginTop: 50, color: '#666' }}>
+            Loading map... {'\n'}Check console for debug info
+          </Text>
+        </View>
       )}
       {/* Example usage: call handleError('Something went wrong!') where appropriate */}
       {/* Remove Back to Home button */}
