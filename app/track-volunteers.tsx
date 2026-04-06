@@ -24,7 +24,7 @@ export default function TrackHoursScreen() {
   // Fetch volunteer information
   const fetchVolunteerInfo = async () => {
     try {
-      const response = await fetch(API_ENDPOINTS.GET_VOLUNTEER_INFO, {
+      const response = await fetch(API_ENDPOINTS.GET_VOLUNTEERS_INFO, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ groupcode }),

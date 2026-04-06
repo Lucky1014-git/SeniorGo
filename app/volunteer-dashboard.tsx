@@ -1,4 +1,5 @@
-import { MaterialIcons } from '@expo/vector-icons'; // Add this import
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Octicons from '@expo/vector-icons/Octicons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -51,19 +52,9 @@ export default function VolunteerDashboard() {
           style={VolunteerDashboardStyles.card}
           onPress={() => router.push('/ride-requests')}
         >
-          <Text style={VolunteerDashboardStyles.cardIcon}>🧓</Text>
+          <Text style={VolunteerDashboardStyles.cardIcon}><MaterialIcons name="directions-car" size={40} color={Colors.primary} /></Text>
           <Text style={VolunteerDashboardStyles.cardTitle}>Ride Requests</Text>
           <Text style={VolunteerDashboardStyles.cardDesc}>View and accept ride requests from seniors</Text>
-        </TouchableOpacity>
-
-        {/* Track Volunteers */}
-        <TouchableOpacity
-          style={VolunteerDashboardStyles.card}
-          onPress={() => router.push('/track-volunteers')}
-        >
-          <Text style={VolunteerDashboardStyles.cardIcon}>⏱️</Text>
-          <Text style={VolunteerDashboardStyles.cardTitle}>Track Hours</Text>
-          <Text style={VolunteerDashboardStyles.cardDesc}>Log and view your volunteer hours</Text>
         </TouchableOpacity>
 
         {/* Approved Rides */}
@@ -71,9 +62,19 @@ export default function VolunteerDashboard() {
           style={VolunteerDashboardStyles.card}
           onPress={() => router.push('/approved-rides')}
         >
-          <Text style={VolunteerDashboardStyles.cardIcon}>✅</Text>
+          <Text style={VolunteerDashboardStyles.cardIcon}><MaterialIcons name="check-circle" size={40} color={Colors.primary} /></Text>
           <Text style={VolunteerDashboardStyles.cardTitle}>Approved Rides</Text>
           <Text style={VolunteerDashboardStyles.cardDesc}>See rides you've approved</Text>
+        </TouchableOpacity>
+
+        {/* Past Rides */}
+        <TouchableOpacity
+          style={VolunteerDashboardStyles.card}
+          onPress={() => router.push('/track-volunteers')}
+        >
+          <Text style={VolunteerDashboardStyles.cardIcon}><Octicons name="paste" size={40} color={Colors.primary} /></Text>
+          <Text style={VolunteerDashboardStyles.cardTitle}>Past Rides</Text>
+          <Text style={VolunteerDashboardStyles.cardDesc}>View your past ride history</Text>
         </TouchableOpacity>
       </View>
     </View>
